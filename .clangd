@@ -1,0 +1,12 @@
+CompileFlags:
+  CompilationDatabase: compile_commands.json
+  Add:
+    - -Wall
+    - -std=c++17
+
+Diagnostics:
+  UnusedIncludes: Strict
+
+Index:
+  Background: true
+  StandardLibrary: true
