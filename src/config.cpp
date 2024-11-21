@@ -6,7 +6,6 @@
 #include "config.hpp"
 
 #include "pros/adi.hpp"
-#include "pros/rotation.hpp"
 
 /** helper function that defines shared pointers */
 #define SHARED(type, name, ...)                                                \
@@ -49,16 +48,20 @@ OdomIntegratedSensor odom_left(drive_left_back, DRIVE_TRACK_WIDTH / 2,
 OdomIntegratedSensor odom_right(drive_right_back, DRIVE_TRACK_WIDTH / 2,
                                 DRIVETRAIN_GEAR_RATIO, 4);
 
-pros::adi::Encoder odom_middle_sensor(ODOM_MIDDLE_PORT, false);
-OdomSensor odom_middle(odom_middle_sensor, 4, 1, ODOMETRY_WHEEL_DIAMETER);
+// pros::adi::Encoder odom_middle_sensor(ODOM_MIDDLE_PORT, false);
+// OdomSensor odom_middle(odom_middle_sensor, 4, 1, ODOMETRY_WHEEL_DIAMETER);
 
 pros::Imu inertial(ODOM_INERTIAL);
-pros::Motor catapult_motor(CATAPULT_PORT, pros::v5::MotorGear::red);
-pros::Rotation catapult_position(CATAPULT_ROT_PORT);
 pros::adi::Pneumatics blocker_1(BLOCKER_1, false);
 pros::adi::Pneumatics blocker_2(BLOCKER_2, false);
-pros::adi::Pneumatics wings_left(WINGS_LEFT, false);
-pros::adi::Pneumatics wings_right(WINGS_RIGHT, false);
-pros::Motor intake_motor(INTAKE_PORT, pros::v5::MotorGear::blue);
+
+pros::Optical intake_sensor(INTAKE_SENSOR_PORT);
+
+// we need individual control of the intake motors
+pros::Motor intake_motor_stg1(INTAKE_PORT_1, pros::v5::MotorGear::green);
+pros::Motor intake_motor_stg2(INTAKE_PORT_2, pros::v5::MotorGear::green);
+
+// pros::MotorGroup intake_motor({intake_motor_stg1, intake_motor_stg2});
+// pros::MotorGroup intake_motor({INTAKE_PORT_1, INTAKE_PORT_2});
 
 #undef SHARED

@@ -19,6 +19,8 @@ void initialize() {
   odom::initalize();
   odom::reset({0, 0, 0});
 
+  subsystems::initInakeTask();
+
   // load pure pursuit paths
   odom::loadPaths({"/usd/skills/push-left.txt", "/usd/pathtest.txt"});
 
@@ -78,6 +80,7 @@ void opcontrol() {
   bool dtReversed = false;
 
   while (true) {
+    // printf("dist: %d\n", intake_sensor.get_proximity());
     // one stick is throttle, one controls turning radius
     // so we can speed up while maintaining a tight turn
     double throttle = master.get_analog(ANALOG_RIGHT_Y);
@@ -104,6 +107,7 @@ void opcontrol() {
         // rightPower -= leftPower; // y = y - x
         // leftPower = -leftPower - rightPower; // x = -x - y
         // swaps x and y and flips signs without temporary variables
+        // less efficient and unreadable, but cool
       }
 
       chassis::move(leftPower, rightPower);
@@ -112,10 +116,15 @@ void opcontrol() {
     // intake
     // DIGITAL_R1: intake in
     // DIGITAL_L1: intake out
-    intake_motor.move(
+    double intake_speed =
         127 * master.get_digital(DIGITAL_R1) -
         (master.get_digital(DIGITAL_L1) || master.get_digital(DIGITAL_R2)) *
-            127);
+            127;
+
+    intake_motor_stg1.move(intake_speed);
+    if (!subsystems::lock_intake_controls.load()) {
+      intake_motor_stg2.move(intake_speed);
+    }
 
     // grabber on DIGITAL_L2
     if (master.get_digital_new_press(DIGITAL_L2)) {
@@ -127,6 +136,25 @@ void opcontrol() {
     if (master.get_digital_new_press(DIGITAL_LEFT)) {
       dtReversed = !dtReversed;
       master.rumble(dtReversed ? "-" : ".");
+    }
+
+    // print the current team onto the controller
+    master.print(0, 0,
+                 subsystems::current_team == subsystems::Color::RED ? "Red"
+                 : subsystems::current_team == subsystems::Color::BLUE
+                     ? "Blue"
+                     : "None");
+
+    // DIGITAL_UP to change the current team
+    // long rumble = now color is red, short rumble = now color is blue
+    if (master.get_digital_new_press(DIGITAL_UP)) {
+      subsystems::current_team =
+          subsystems::current_team == subsystems::Color::RED
+              ? subsystems::Color::BLUE
+              : subsystems::Color::RED;
+
+      master.rumble(subsystems::current_team == subsystems::Color::RED ? "-"
+                                                                       : ".");
     }
 
     pros::delay(10);

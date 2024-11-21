@@ -5,8 +5,8 @@
 // ODOMETRY
 #define ODOMETRY_TICKS_PER_INCH 360.0 // ticks per inch
 #define ODOMETRY_WHEEL_DIAMETER 3.25  // inches
-#define ODOM_MIDDLE_PORT 'c', 'd'
-#define ODOM_INERTIAL 16
+// #define ODOM_MIDDLE_PORT 'c', 'd'
+#define ODOM_INERTIAL 7
 
 // DRIVETRAIN
 #define DRIVETRAIN_GEAR_RATIO /* input 32 -> output 60 */ (double)32 / 60
@@ -14,25 +14,23 @@
 #define DRIVE_LEFT_FRONT 1
 #define DRIVE_LEFT_BACK 2
 #define DRIVE_LEFT_PTO 3
-#define DRIVE_RIGHT_FRONT 4
-#define DRIVE_RIGHT_BACK 5
-#define DRIVE_RIGHT_PTO 6
+#define DRIVE_RIGHT_FRONT 6
+#define DRIVE_RIGHT_BACK 4
+#define DRIVE_RIGHT_PTO 5
 #define DRIVE_TRACK_WIDTH 12 // inches
 
 // CATAPULT
 #define CATAPULT_PORT 15
-#define CATAPULT_ROT_PORT 10
+// #define CATAPULT_ROT_PORT 10
 
 // INTAKE
-#define INTAKE_PORT 9
+#define INTAKE_PORT_1 12
+#define INTAKE_PORT_2 10
+#define INTAKE_SENSOR_PORT 11
 
 // WINGS
 #define BLOCKER_1 'g'
 #define BLOCKER_2 'h'
-
-// BLOCKER
-#define WINGS_LEFT 'a'
-#define WINGS_RIGHT 'b'
 
 /*************************
  * VARIABLE DECLARATIONS *
@@ -66,7 +64,7 @@ struct OdomIntegratedSensor : BasicOdomSensor {
 // no need to use shared pointers
 extern OdomIntegratedSensor odom_left;
 extern OdomIntegratedSensor odom_right;
-extern OdomSensor odom_middle;
+// extern OdomSensor odom_middle;
 extern pros::Imu inertial;
 
 //// Drivetrain
@@ -93,7 +91,10 @@ extern pros::adi::Pneumatics blocker_1;
 extern pros::adi::Pneumatics blocker_2;
 
 ///// Intake
-extern pros::Motor intake_motor;
+extern pros::Motor intake_motor_stg1; // outer intake
+extern pros::Motor intake_motor_stg2; // disk ring intake
+extern pros::MotorGroup intake_motor;
+extern pros::Optical intake_sensor;
 
 // undefine SHARED macro to prevent accidental use
 #undef SHARED

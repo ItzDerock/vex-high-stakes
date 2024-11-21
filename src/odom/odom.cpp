@@ -243,7 +243,7 @@ void odom::reset(odom::RobotPosition startState) {
     CHECK_SUCCESS(motor->set_zero_position(0), "drive_right");
   }
 
-  CHECK_SUCCESS(odom_middle.sensor.reset(), "odom_middle");
+  // CHECK_SUCCESS(odom_middle.sensor.reset(), "odom_middle");
   CHECK_SUCCESS(inertial.reset(true), "odom_imu");
 
   // reset state

@@ -20,6 +20,7 @@ let
       pyzmq
       sentry-sdk
       pypng
+      # libclang.python
     ];
     src = (
       pkgs.fetchFromGitHub {
@@ -64,9 +65,9 @@ in {
   # env.GREET = "devenv";
 
   # https://devenv.sh/packages/
-  packages = with pkgs; [ 
+  packages = with pkgs; [
     gcc-arm-embedded
-    pros-cli 
+    pros-cli
     bear # build compile commands
   ];
 

@@ -1,6 +1,13 @@
 #pragma once
 
-#include "PID.hpp"
-#include "pros/rtos.hpp"
+#include <atomic>
 
-// TODO: implement required subsystems
+namespace subsystems {
+
+void initInakeTask();
+
+enum Color { RED, BLUE, NONE };
+extern std::atomic<bool> lock_intake_controls;
+extern std::atomic<Color> current_team;
+
+} // namespace subsystems

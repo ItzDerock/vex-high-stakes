@@ -1,8 +1,10 @@
 #include "../config.hpp"
+#include "liblvgl/widgets/lv_dropdown.h"
 #include "main.h"
 #include "pros-mpeg/mpeg.hpp"
 #include "robot/odom.hpp"
 #include "robot/screen.hpp"
+#include "robot/subsystems.hpp"
 #include "robot/utils.hpp"
 
 // current screen
@@ -20,10 +22,12 @@ static void switch_screen_event_cb(lv_event_t *event) {
 
   if (code == LV_EVENT_CLICKED) {
     if (lv_scr_act() == screen::auton_selector_screen) {
-      if (player != NULL) player->resume();
+      if (player != NULL)
+        player->resume();
       lv_scr_load(original_screen);
     } else {
-      if (player != NULL) player->pause();
+      if (player != NULL)
+        player->pause();
       lv_scr_load(screen::auton_selector_screen);
     }
   }
@@ -35,9 +39,18 @@ static void auto_dropdown_select(lv_event_t *event) {
   lv_obj_t *obj = lv_event_get_target(event);
 
   if (code == LV_EVENT_VALUE_CHANGED) {
-    // std::string value = lv_dropdown_get_selected_str(obj);
     int value = lv_dropdown_get_selected(obj);
     odom::autonomous = (odom::Autonomous)value;
+  }
+}
+
+static void team_dropdown_select(lv_event_t *event) {
+  lv_event_code_t code = lv_event_get_code(event);
+  lv_obj_t *obj = lv_event_get_target(event);
+
+  if (code == LV_EVENT_VALUE_CHANGED) {
+    int value = lv_dropdown_get_selected(obj);
+    subsystems::current_team = (subsystems::Color)value;
   }
 }
 
@@ -47,23 +60,23 @@ static void reset_position_event_cb(lv_event_t *event) {
 
   if (code == LV_EVENT_CLICKED) {
     switch (odom::autonomous) {
-      case odom::Autonomous::Skills:
-        odom::reset(
-            {-35, -70 + (double)DRIVE_TRACK_WIDTH / 2, utils::degToRad(90)});
-        break;
+    case odom::Autonomous::Skills:
+      odom::reset(
+          {-35, -70 + (double)DRIVE_TRACK_WIDTH / 2, utils::degToRad(90)});
+      break;
 
-      case odom::Autonomous::SixBall:
-        odom::reset(
-            {-8, -70 + (double)DRIVE_TRACK_WIDTH / 2, utils::degToRad(90)});
-        break;
+    case odom::Autonomous::SixBall:
+      odom::reset(
+          {-8, -70 + (double)DRIVE_TRACK_WIDTH / 2, utils::degToRad(90)});
+      break;
 
-      case odom::Autonomous::Defense:
-        odom::reset({-60, -40, M_PI});
-        break;
+    case odom::Autonomous::Defense:
+      odom::reset({-60, -40, M_PI});
+      break;
 
-      default:
-        odom::reset({0, 0, 0});
-        break;
+    default:
+      odom::reset({0, 0, 0});
+      break;
     }
   }
 }
@@ -100,6 +113,15 @@ void screen::initAutonSelector(MPEGPlayer *video) {
                           "None\nSkills\nSix Ball\nTouch Bar\nDefense");
   lv_obj_add_event_cb(dropdown, auto_dropdown_select, LV_EVENT_VALUE_CHANGED,
                       NULL);
+
+  // dropdown for the team selector
+  lv_obj_t *team_dropdown = lv_dropdown_create(screen::auton_selector_screen);
+  lv_obj_set_pos(team_dropdown, 150, 10);
+  lv_dropdown_set_selected(team_dropdown, (uint16_t)subsystems::current_team);
+  lv_dropdown_set_selected(team_dropdown, subsystems::current_team);
+  lv_dropdown_set_options(team_dropdown, "Blue\nRed\nNone");
+  lv_obj_add_event_cb(team_dropdown, team_dropdown_select,
+                      LV_EVENT_VALUE_CHANGED, NULL);
 
   // reset position button
   lv_obj_t *reset_position = lv_btn_create(screen::auton_selector_screen);

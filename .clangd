@@ -1,8 +1,14 @@
 CompileFlags:
-  CompilationDatabase: compile_commands.json
   Add:
-    - -Wall
-    - -std=c++17
+    - -std=c++20
+    - -I./include
+    - -I/nix/store/7zrbj0f8pwvard552qm736c0w2v3s8s9-gcc-arm-embedded-12.3.rel1/arm-none-eabi/include/c++/12.3.1
+    - -I/nix/store/7zrbj0f8pwvard552qm736c0w2v3s8s9-gcc-arm-embedded-12.3.rel1/arm-none-eabi/include/c++/12.3.1/arm-none-eabi
+    - -I/nix/store/7zrbj0f8pwvard552qm736c0w2v3s8s9-gcc-arm-embedded-12.3.rel1/arm-none-eabi/include/c++/12.3.1/backward
+    - -I/nix/store/7zrbj0f8pwvard552qm736c0w2v3s8s9-gcc-arm-embedded-12.3.rel1/lib/gcc/arm-none-eabi/12.3.1/include
+    - -I/nix/store/7zrbj0f8pwvard552qm736c0w2v3s8s9-gcc-arm-embedded-12.3.rel1/lib/gcc/arm-none-eabi/12.3.1/include-fixed
+    - -I/nix/store/7zrbj0f8pwvard552qm736c0w2v3s8s9-gcc-arm-embedded-12.3.rel1/arm-none-eabi/include
+    - --gcc-toolchain=/nix/store/7zrbj0f8pwvard552qm736c0w2v3s8s9-gcc-arm-embedded-12.3.rel1
 
 Diagnostics:
   UnusedIncludes: Strict
