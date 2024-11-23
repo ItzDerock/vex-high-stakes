@@ -16,18 +16,7 @@ temp.errors
 *.ini
 .d/
 
-# temporary files
-index.html
-logs.txt
-
-#
-build/
-node_modules/# Devenv
-.devenv*
-devenv.local.nix
-
-# direnv
+# devenv
+.devenv
 .direnv
-
-# pre-commit
-.pre-commit-config.yaml
+.devenv.flake.nix
