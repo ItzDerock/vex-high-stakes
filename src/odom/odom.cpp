@@ -10,6 +10,7 @@
 #include "robot/utils.hpp"
 
 #define ODOM_DEBUG false
+#define ODOM_UPDATE_INTERVAL 10 /* ms */
 
 /**
  * Odometry implementation is based on the following paper:
@@ -49,11 +50,6 @@ inline static double normalizeSensorData(double position,
   double wheelRotations = position / 360;
   double adjustedWheelRotations = wheelRotations * sensor.gear_ratio;
   double wheelCircumference = sensor.wheel_size * M_PI;
-
-  // printf(
-  //     "wheelRotations: %f, adjustedWheelRotations: %f, wheelCircumference: "
-  //     "%f\n",
-  //     wheelRotations, adjustedWheelRotations, wheelCircumference);
 
   return adjustedWheelRotations * wheelCircumference;
 }
@@ -103,24 +99,15 @@ void odom::update() {
   // 2. Calculate delta values
   double dL = left - prevSensors.left;
   double dR = right - prevSensors.right;
-  // double dC = center - prevSensors.center;
 
   // 3. Update the previous values
   prevSensors.left = left;
   prevSensors.right = right;
-  // prevSensors.center = center;
-
-  // 4. total change since last reset
-  // auto deltaLr = left - resetValues.left;
-  // auto deltaRr = right - resetValues.right;
 
   // 5. Calculate new orientation
   double newTheta = resetValues.theta + inertial.get_heading() * M_PI / 180;
   if (newTheta > 2 * M_PI)
     newTheta -= 2 * M_PI;
-  // newTheta = utils::angleSquish(newTheta);
-  // double newTheta = resetValues.theta +
-  //                   (left - right) / (odom_left.offset + odom_right.offset);
 
   // 6. Calculate change in orientation
   double dTheta = newTheta - state->theta;
@@ -137,7 +124,7 @@ void odom::update() {
   // calculate the velocity
   // divide by 10 because this function is called every 10ms
   // multiply by 1000 to get it in inches per second
-  velocity = (state->distance(prevState) / 10) * 1000;
+  velocity = (state->distance(prevState) / ODOM_UPDATE_INTERVAL) * 1000;
 
   // The following is the legacy odometry algorithm
   // it has been replaced with the above code
@@ -201,7 +188,7 @@ void odom::update() {
 void odom::updateLoop() {
   while (true) {
     update();
-    pros::delay(10);
+    pros::delay(ODOM_UPDATE_INTERVAL);
   }
 }
 

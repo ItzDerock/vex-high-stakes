@@ -75,8 +75,8 @@ void intake_loop() {
     } while (intake_sensor.get_proximity() > NEAR_THRESHOLD);
 
     double average_color = (double)color_sum / (100 * color_count);
-    printf("detected color: %f\n", average_color);
-    printf("broke cus proximity is %d\n", intake_sensor.get_proximity());
+    // printf("detected color: %f\n", average_color);
+    // printf("broke cus proximity is %d\n", intake_sensor.get_proximity());
 
     // hue is a wheel, [0, 360] so we can take advantage of angle functions
     subsystems::Color detected_color =
@@ -94,7 +94,6 @@ void intake_loop() {
     printf("classified color: %d\n", detected_color);
 #endif
 
-    // todo: changeable
     if (detected_color != subsystems::current_team) {
       interrupts.push(intake_motor_stg2.get_position() + MOVES_TILL_STOP);
       printf("publishing interrupt\n");
