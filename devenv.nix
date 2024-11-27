@@ -77,6 +77,9 @@ in {
       numpy
       pyqt5
     ]))
+
+    pandoc # pdf generator
+    poppler_utils # pdf to png
   ];
 
   # https://devenv.sh/languages/

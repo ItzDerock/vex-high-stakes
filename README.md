@@ -46,7 +46,7 @@ cmake --build build
 
 ## Utility Programs:
 - `scripts/htmlify.sh` - Converts all source files (controlled by a list containing glob patterns) to one large HTML file so you can export and paste into your design notebook.
-  - After using this, use `pdmtoppm -r 250 -png <pdf> page -progress` to convert to PNGs
+  - After using this, use `pdftoppm -r 250 -png <pdf> page -progress` to convert to PNGs
   - Then use LibreOffice Impress, import > media > image gallery to import images
   - Then export as .pptx and import that to Google Slides
   - Kind of a pain, but most HTML/PDF -> PPTX converters mess up the formatting.
