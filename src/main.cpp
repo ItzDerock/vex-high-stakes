@@ -2,6 +2,7 @@
 
 #include "config.hpp"
 #include "pros-mpeg/mpeg.hpp"
+#include "pros/abstract_motor.hpp"
 #include "pros/misc.h"
 #include "robot/chassis.hpp"
 #include "robot/odom.hpp"
@@ -20,6 +21,9 @@ void initialize() {
   odom::reset({0, 0, 0});
 
   subsystems::initInakeTask();
+
+  // set motor to hold mode
+  lift.set_brake_mode_all(pros::MotorBrake::hold);
 
   // load pure pursuit paths
   odom::loadPaths({"/usd/skills/push-left.txt", "/usd/pathtest.txt"});
@@ -125,6 +129,12 @@ void opcontrol() {
     if (!subsystems::lock_intake_controls.load()) {
       intake_motor_stg2.move(intake_speed);
     }
+
+    // lift
+    // DIGITAL_X: lift up
+    // DIGITAL_B: lift down
+    lift.move(127 * master.get_digital(DIGITAL_X) -
+              127 * master.get_digital(DIGITAL_B));
 
     // grabber on DIGITAL_L2
     if (master.get_digital_new_press(DIGITAL_L2)) {

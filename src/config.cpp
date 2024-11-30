@@ -64,4 +64,7 @@ pros::Motor intake_motor_stg2(INTAKE_PORT_2, pros::v5::MotorGear::green);
 // pros::MotorGroup intake_motor({intake_motor_stg1, intake_motor_stg2});
 // pros::MotorGroup intake_motor({INTAKE_PORT_1, INTAKE_PORT_2});
 
+// Lift
+pros::MotorGroup lift({LIFT_LEFT, -LEFT_RIGHT});
+
 #undef SHARED

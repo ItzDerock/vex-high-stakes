@@ -19,9 +19,9 @@
 #define DRIVE_RIGHT_PTO 5
 #define DRIVE_TRACK_WIDTH 12 // inches
 
-// CATAPULT
-#define CATAPULT_PORT 15
-// #define CATAPULT_ROT_PORT 10
+// LIFT
+#define LIFT_LEFT 9
+#define LEFT_RIGHT 8
 
 // INTAKE
 #define INTAKE_PORT_1 12
@@ -95,6 +95,9 @@ extern pros::Motor intake_motor_stg1; // outer intake
 extern pros::Motor intake_motor_stg2; // disk ring intake
 extern pros::MotorGroup intake_motor;
 extern pros::Optical intake_sensor;
+
+//// Lift
+extern pros::MotorGroup lift;
 
 // undefine SHARED macro to prevent accidental use
 #undef SHARED
