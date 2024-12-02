@@ -62,18 +62,33 @@ let
 
 in {
   # https://devenv.sh/basics/
-  # env.GREET = "devenv";
+  env.QT_QPA_PLATFORM_PLUGIN_PATH = "${pkgs.qt5.qtbase.bin}/lib/qt-${pkgs.qt5.qtbase.version}/plugins";
 
   # https://devenv.sh/packages/
   packages = with pkgs; [
     gcc-arm-embedded
     pros-cli
     bear # build compile commands
+
+    (python3.withPackages (python-pkgs: with python-pkgs; [
+      matplotlib
+      numpy
+      pyqt5
+    ]))
   ];
 
   # https://devenv.sh/languages/
   languages.cplusplus.enable = true;
   languages.c.enable = true;
+
+  # languages.python = {
+  #   enable = true;
+  #   package = (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
+  #     matplotlib
+  #     numpy
+  #     pyqt5
+  #   ]));
+  # };
 
   # quick aliases
   scripts.mut.exec = "bear -- pros --no-sentry --no-analytics mut --after run";

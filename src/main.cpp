@@ -21,9 +21,7 @@ void initialize() {
   odom::reset({0, 0, 0});
 
   subsystems::initInakeTask();
-
-  // set motor to hold mode
-  lift.set_brake_mode_all(pros::MotorBrake::hold);
+  subsystems::initLiftTask();
 
   // load pure pursuit paths
   odom::loadPaths({"/usd/skills/push-left.txt", "/usd/pathtest.txt"});
@@ -120,21 +118,24 @@ void opcontrol() {
     // intake
     // DIGITAL_R1: intake in
     // DIGITAL_L1: intake out
-    double intake_speed =
-        127 * master.get_digital(DIGITAL_R1) -
-        (master.get_digital(DIGITAL_L1) || master.get_digital(DIGITAL_R2)) *
-            127;
+    double intake_speed = 127 * master.get_digital(DIGITAL_R1) -
+                          (master.get_digital(DIGITAL_R2)) * 127;
 
     intake_motor_stg1.move(intake_speed);
-    if (!subsystems::lock_intake_controls.load()) {
+    if (!subsystems::lockIntakeControls.load()) {
       intake_motor_stg2.move(intake_speed);
     }
 
+    // toggle redirect
+    if (master.get_digital_new_press(DIGITAL_DOWN)) {
+      subsystems::intakeRedirectMode.store(
+          !subsystems::intakeRedirectMode.load());
+    }
+
     // lift
-    // DIGITAL_X: lift up
-    // DIGITAL_B: lift down
-    lift.move(127 * master.get_digital(DIGITAL_X) -
-              127 * master.get_digital(DIGITAL_B));
+    if (master.get_digital_new_press(DIGITAL_L1)) {
+      subsystems::cycleLiftPosition();
+    }
 
     // grabber on DIGITAL_L2
     if (master.get_digital_new_press(DIGITAL_L2)) {
@@ -148,23 +149,27 @@ void opcontrol() {
       master.rumble(dtReversed ? "-" : ".");
     }
 
-    // print the current team onto the controller
-    master.print(0, 0,
-                 subsystems::current_team == subsystems::Color::RED ? "Red"
-                 : subsystems::current_team == subsystems::Color::BLUE
-                     ? "Blue"
-                     : "None");
+    // print the current team and redirect status onto the controller
+    std::string team_str =
+        subsystems::currentTeam == subsystems::Color::RED    ? "Red "
+        : subsystems::currentTeam == subsystems::Color::BLUE ? "Blue"
+                                                             : "None";
+
+    std::string redirect_str =
+        subsystems::intakeRedirectMode.load() ? "REDIRECTING" : "           ";
+
+    master.print(0, 0, (team_str + redirect_str).c_str());
 
     // DIGITAL_UP to change the current team
     // long rumble = now color is red, short rumble = now color is blue
     if (master.get_digital_new_press(DIGITAL_UP)) {
-      subsystems::current_team =
-          subsystems::current_team == subsystems::Color::RED
+      subsystems::currentTeam =
+          subsystems::currentTeam == subsystems::Color::RED
               ? subsystems::Color::BLUE
               : subsystems::Color::RED;
 
-      master.rumble(subsystems::current_team == subsystems::Color::RED ? "-"
-                                                                       : ".");
+      master.rumble(subsystems::currentTeam == subsystems::Color::RED ? "-"
+                                                                      : ".");
     }
 
     pros::delay(10);

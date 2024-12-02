@@ -4,10 +4,19 @@
 
 namespace subsystems {
 
+/* INTAKE Subsystem */
+
 void initInakeTask();
 
 enum Color { RED, BLUE, NONE };
-extern std::atomic<bool> lock_intake_controls;
-extern std::atomic<Color> current_team;
+extern std::atomic<bool> lockIntakeControls;
+extern std::atomic<Color> currentTeam;
+extern std::atomic<bool> intakeRedirectMode;
+
+/* LIFT Subsystem */
+
+void initLiftTask();
+void setTargetLiftPosition(double position);
+void cycleLiftPosition();
 
 } // namespace subsystems

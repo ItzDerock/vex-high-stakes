@@ -6,38 +6,64 @@
 #include <cstdint>
 #include <queue>
 
-#define NEAR_THRESHOLD 240
+#define NEAR_THRESHOLD 200
 #define COLOR_RED 0
 #define COLOR_BLUE 229
 #define COLOR_THRESHOLD 20
-#define MOVES_TILL_STOP 1.65 * 360
+#define MOVES_TILL_STOP 4.2 * 360
+#define MOVES_TILL_REDIRECT 3.95 * 360
+
+// #define INTAKE_DEBUG true
+
+struct Interrupt {
+  enum Type { SORT, REDIRECT };
+  Type type;
+  double position;
+
+  // prority queue sorted by rotations
+  // so need to implement comparison operator
+  bool operator<(const Interrupt &other) const {
+    return position < other.position;
+  }
+};
 
 // priority queue sorted by rotations
-std::priority_queue<double> interrupts;
-std::atomic<bool> subsystems::lock_intake_controls(false);
-std::atomic<subsystems::Color> subsystems::current_team(NONE);
+std::priority_queue<Interrupt> interrupts;
+std::atomic<bool> subsystems::lockIntakeControls(false);
+std::atomic<bool> subsystems::intakeRedirectMode(false);
+std::atomic<subsystems::Color> subsystems::currentTeam(NONE);
 
 void check_for_interrupts() {
   while (true) {
     while (!interrupts.empty()) {
-      double next_interrupt = interrupts.top();
+      Interrupt next_interrupt = interrupts.top();
       double motor_position = intake_motor_stg2.get_position();
 
-      // printf("next interrupt: %f\n", next_interrupt);
-      // printf("current motor position: %f\n", motor_position);
-
-      if (next_interrupt > motor_position) {
+      if (next_interrupt.position > motor_position) {
         break;
       }
 
-      // stop motor for 10millis
-      subsystems::lock_intake_controls.store(true);
+      std::cout << "interrupt at " << next_interrupt.position
+                << " and motor is " << motor_position << std::endl;
+
+      // lock the controls to prevent driver from interfering
+      subsystems::lockIntakeControls.store(true);
       double current_velocity = intake_motor_stg2.get_target_velocity();
-      intake_motor_stg2.move(-127);
-      pros::delay(100);
+
+      if (next_interrupt.type == Interrupt::SORT) {
+        // if sort interrupt, stop motor for 10millis
+        intake_motor_stg2.move(-127);
+        pros::delay(100);
+      } else {
+        // if redirect interrupt, move backwards for 250ms
+        intake_motor_stg2.move(-250);
+        pros::delay(250);
+      }
+
+      // and unlock the controls
       intake_motor_stg2.move_velocity(current_velocity);
+      subsystems::lockIntakeControls.store(false);
       interrupts.pop();
-      subsystems::lock_intake_controls.store(false);
     }
 
     pros::delay(5);
@@ -47,6 +73,10 @@ void check_for_interrupts() {
 void intake_loop() {
   while (true) {
     uint32_t distance = intake_sensor.get_proximity();
+
+#ifdef INTAKE_DEBUG
+    printf("d: %d\n", distance);
+#endif
 
     // check if NEAR on bottom intake sensor
     if (distance < NEAR_THRESHOLD) {
@@ -72,11 +102,15 @@ void intake_loop() {
       color_count++;
 
       pros::delay(10);
+
+#ifdef INTAKE_DEBUG
+      printf("d: %d\n", intake_sensor.get_proximity());
+#endif
     } while (intake_sensor.get_proximity() > NEAR_THRESHOLD);
 
     double average_color = (double)color_sum / (100 * color_count);
-    // printf("detected color: %f\n", average_color);
-    // printf("broke cus proximity is %d\n", intake_sensor.get_proximity());
+    printf("Finished getting avg color, proximity is %d\n",
+           intake_sensor.get_proximity());
 
     // hue is a wheel, [0, 360] so we can take advantage of angle functions
     subsystems::Color detected_color =
@@ -91,12 +125,22 @@ void intake_loop() {
            fabs(utils::angleError(average_color, COLOR_RED)));
     printf("angle error blue: %f\n",
            fabs(utils::angleError(average_color, COLOR_BLUE)));
-    printf("classified color: %d\n", detected_color);
 #endif
 
-    if (detected_color != subsystems::current_team) {
-      interrupts.push(intake_motor_stg2.get_position() + MOVES_TILL_STOP);
-      printf("publishing interrupt\n");
+    printf("classified color: %d\n", detected_color);
+    printf("motor position is: %f\n", intake_motor_stg2.get_position());
+
+    if (detected_color != subsystems::currentTeam) {
+      interrupts.push(Interrupt{.type = Interrupt::SORT,
+                                .position = intake_motor_stg2.get_position() +
+                                            MOVES_TILL_STOP});
+    }
+
+    // if redirect mode is on, append redirect interrupt
+    if (subsystems::intakeRedirectMode.load()) {
+      interrupts.push(Interrupt{.type = Interrupt::REDIRECT,
+                                .position = intake_motor_stg2.get_position() +
+                                            MOVES_TILL_REDIRECT});
     }
 
     pros::delay(10);

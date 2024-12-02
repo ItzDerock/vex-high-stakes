@@ -50,7 +50,7 @@ static void team_dropdown_select(lv_event_t *event) {
 
   if (code == LV_EVENT_VALUE_CHANGED) {
     int value = lv_dropdown_get_selected(obj);
-    subsystems::current_team = (subsystems::Color)value;
+    subsystems::currentTeam = (subsystems::Color)value;
   }
 }
 
@@ -117,8 +117,8 @@ void screen::initAutonSelector(MPEGPlayer *video) {
   // dropdown for the team selector
   lv_obj_t *team_dropdown = lv_dropdown_create(screen::auton_selector_screen);
   lv_obj_set_pos(team_dropdown, 150, 10);
-  lv_dropdown_set_selected(team_dropdown, (uint16_t)subsystems::current_team);
-  lv_dropdown_set_selected(team_dropdown, subsystems::current_team);
+  lv_dropdown_set_selected(team_dropdown, (uint16_t)subsystems::currentTeam);
+  lv_dropdown_set_selected(team_dropdown, subsystems::currentTeam);
   lv_dropdown_set_options(team_dropdown, "Blue\nRed\nNone");
   lv_obj_add_event_cb(team_dropdown, team_dropdown_select,
                       LV_EVENT_VALUE_CHANGED, NULL);

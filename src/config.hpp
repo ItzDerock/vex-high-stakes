@@ -97,7 +97,8 @@ extern pros::MotorGroup intake_motor;
 extern pros::Optical intake_sensor;
 
 //// Lift
-extern pros::MotorGroup lift;
+extern pros::Motor lift_left;
+extern pros::Motor lift_right;
 
 // undefine SHARED macro to prevent accidental use
 #undef SHARED
