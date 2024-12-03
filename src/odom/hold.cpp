@@ -4,7 +4,6 @@
 
 #include <atomic>
 
-#include "main.h"
 #include "robot/chassis.hpp"
 #include "robot/odom.hpp"
 #include "robot/utils.hpp"

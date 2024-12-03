@@ -43,9 +43,9 @@ std::vector<pros::Motor *> drive_right = std::vector<pros::Motor *>{
 // };
 
 // offset, gear ratio, wheel size
-OdomIntegratedSensor odom_left(drive_left_back, DRIVE_TRACK_WIDTH / 2,
+OdomIntegratedSensor odom_left(drive_left_back, (double)DRIVE_TRACK_WIDTH / 2,
                                DRIVETRAIN_GEAR_RATIO, 4);
-OdomIntegratedSensor odom_right(drive_right_back, DRIVE_TRACK_WIDTH / 2,
+OdomIntegratedSensor odom_right(drive_right_back, (double)DRIVE_TRACK_WIDTH / 2,
                                 DRIVETRAIN_GEAR_RATIO, 4);
 
 // pros::adi::Encoder odom_middle_sensor(ODOM_MIDDLE_PORT, false);
