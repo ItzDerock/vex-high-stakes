@@ -17,7 +17,7 @@ PIDController rightLiftPID(LIFT_KP, LIFT_KI, LIFT_KD);
 std::atomic<double> targetLiftPosition;
 
 // lift positions {REST, HIGH, ALLIANCE}
-double liftPositions[3] = {0, 4.35 * 360, 2.6 * 360};
+double liftPositions[3] = {0, 4.45 * 360, 2.7 * 360};
 int currentLiftPosition = 0;
 
 void internalLiftLoop() {
