@@ -130,14 +130,17 @@ void intake_loop() {
     printf("classified color: %d\n", detected_color);
     printf("motor position is: %f\n", intake_motor_stg2.get_position());
 
-    if (detected_color != subsystems::currentTeam) {
+    // if current team is NONE, ignore
+    // otherwise, if differing ring color, eject it
+    if (detected_color != subsystems::currentTeam.load() &&
+        subsystems::currentTeam.load() != subsystems::NONE) {
       interrupts.push(Interrupt{.type = Interrupt::SORT,
                                 .position = intake_motor_stg2.get_position() +
                                             MOVES_TILL_STOP});
     }
 
     // if redirect mode is on, append redirect interrupt
-    if (subsystems::intakeRedirectMode.load()) {
+    else if (subsystems::intakeRedirectMode.load()) {
       interrupts.push(Interrupt{.type = Interrupt::REDIRECT,
                                 .position = intake_motor_stg2.get_position() +
                                             MOVES_TILL_REDIRECT});
