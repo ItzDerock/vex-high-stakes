@@ -5,9 +5,10 @@
 #include <atomic>
 
 #include "../config.hpp"
+#include "pros/abstract_motor.hpp"
 #include "robot/utils.hpp"
 
-#define ODOM_DEBUG false
+#define ODOM_DEBUG true
 #define ODOM_UPDATE_INTERVAL 10 /* ms */
 
 /**
@@ -43,9 +44,7 @@ std::atomic<double> velocity = 0;
  */
 inline static double normalizeSensorData(double position,
                                          BasicOdomSensor sensor) {
-  // return (position * sensor.gear_ratio) / 360 * sensor.wheel_size * M_PI;
-
-  double wheelRotations = position / 360;
+  double wheelRotations = position / 360.0;
   double adjustedWheelRotations = wheelRotations * sensor.gear_ratio;
   double wheelCircumference = sensor.wheel_size * M_PI;
 
@@ -53,31 +52,20 @@ inline static double normalizeSensorData(double position,
 }
 
 double readDrivetrainSensor(std::vector<pros::Motor *> const &motors) {
-  // find the median value
-  // quick hack since we only have 3 motors
+  // find median of the three drivetrain motors
+  // Median is resistant to outliers, so if a DT sensor is bugged and reads 0,
+  // it won't skew the data
   double values[3] = {motors[0]->get_position(), motors[1]->get_position(),
                       motors[2]->get_position()};
 
-  if (values[0] == values[1] || values[0] == values[2])
-    return values[0];
-  if (values[1] == values[2])
-    return values[1];
+#ifdef ODOM_DEBUG
+  printf("[odom] dt sensors read: %f, %f, %f", values[0], values[1], values[2]);
+#endif
 
-  // as fallback, calculate the average
-  // check if any are equal to 0
-  // if so, ignore them
-  double sum = 0;
-  int count = 0;
-  for (int i = 0; i < 3; i++) {
-    if (values[i] != 0) {
-      sum += values[i];
-      count++;
-    }
-  }
-
-  if (count == 0)
-    return 0;
-  return sum / count;
+  // https://stackoverflow.com/questions/1582356/fastest-way-of-finding-the-middle-value-of-a-triple
+  // no need for sorted array!
+  return std::max(std::min(values[0], values[1]),
+                  std::min(std::max(values[0], values[1]), values[2]));
 }
 
 void odom::update() {
@@ -89,6 +77,10 @@ void odom::update() {
   double right = readDrivetrainSensor(drive_right);
   // double center = (double)odom_middle.sensor->get_value();
 
+#ifdef ODOM_DEBUG
+  printf("[odom] drivetrain LR raw: %f, %f\n", left, right);
+#endif
+
   //  (1.1) Convert to distance of wheel travel (inches)
   left = normalizeSensorData(left, odom_left);
   right = normalizeSensorData(right, odom_right);
@@ -97,6 +89,11 @@ void odom::update() {
   // 2. Calculate delta values
   double dL = left - prevSensors.left;
   double dR = right - prevSensors.right;
+
+#ifdef ODOM_DEBUG
+  printf("[odom] drivetrain LR inches: %f, %f\n", left, right);
+  printf("[odom] resulting in dL, dR: %f, %f\n", dL, dR);
+#endif
 
   // 3. Update the previous values
   prevSensors.left = left;
@@ -166,18 +163,19 @@ void odom::update() {
     state->theta = newTheta;
   */
 
-#if ODOM_DEBUG
-  logger::log(logger::Route::RobotPosition, {state->x, state->y, state->theta});
+  // #if ODOM_DEBUG
+  //   logger::log(logger::Route::RobotPosition, {state->x, state->y,
+  //   state->theta});
 
-  // I wish there was a more elegant way to do this
-  logger::log(logger::Route::RobotVelocity,
-              {
-                  drive_left_back->get_actual_velocity(),
-                  (double)drive_left_back->get_target_velocity(),
-                  drive_right_back->get_actual_velocity(),
-                  (double)drive_right_back->get_target_velocity(),
-              });
-#endif
+  //   // I wish there was a more elegant way to do this
+  //   logger::log(logger::Route::RobotVelocity,
+  //               {
+  //                   drive_left_back->get_actual_velocity(),
+  //                   (double)drive_left_back->get_target_velocity(),
+  //                   drive_right_back->get_actual_velocity(),
+  //                   (double)drive_right_back->get_target_velocity(),
+  //               });
+  // #endif
 
   // unlock mutex
   mutex.give();
@@ -221,10 +219,12 @@ void odom::reset(odom::RobotPosition startState) {
 
   // reset encoders
   for (auto motor : drive_left) {
+    motor->set_encoder_units(pros::MotorUnits::degrees);
     CHECK_SUCCESS(motor->set_zero_position(0), "drive_left");
   }
 
   for (auto motor : drive_right) {
+    motor->set_encoder_units(pros::MotorUnits::degrees);
     CHECK_SUCCESS(motor->set_zero_position(0), "drive_right");
   }
 

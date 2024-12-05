@@ -9,7 +9,7 @@
 #define ODOM_INERTIAL 7
 
 // DRIVETRAIN
-#define DRIVETRAIN_GEAR_RATIO /* input 32 -> output 60 */ (double)32 / 60
+#define DRIVETRAIN_GEAR_RATIO /* input 36 -> output 72 */ (double)36 / 72
 #define DRIVETRAIN_GEARBOX pros::v5::MotorGear::blue
 #define DRIVE_LEFT_FRONT 1
 #define DRIVE_LEFT_BACK 2
@@ -17,7 +17,7 @@
 #define DRIVE_RIGHT_FRONT 6
 #define DRIVE_RIGHT_BACK 4
 #define DRIVE_RIGHT_PTO 5
-#define DRIVE_TRACK_WIDTH 12 // inches
+#define DRIVE_TRACK_WIDTH 12.3 // inches
 
 // LIFT
 #define LIFT_LEFT 9
