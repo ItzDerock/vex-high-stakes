@@ -1,14 +1,13 @@
 #include "robot/odom.hpp"
 
-#include <math.h>
-
 #include <atomic>
+#include <math.h>
 
 #include "../config.hpp"
 #include "pros/abstract_motor.hpp"
 #include "robot/utils.hpp"
 
-#define ODOM_DEBUG true
+// #define ODOM_DEBUG true
 #define ODOM_UPDATE_INTERVAL 10 /* ms */
 
 /**
