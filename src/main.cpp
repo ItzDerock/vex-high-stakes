@@ -3,6 +3,7 @@
 #include "config.hpp"
 #include "pros-mpeg/mpeg.hpp"
 #include "pros/misc.h"
+#include "pros/rtos.hpp"
 #include "robot/chassis.hpp"
 #include "robot/odom.hpp"
 #include "robot/screen.hpp"
@@ -64,6 +65,7 @@ void autonomous() {
   switch (odom::autonomous) {
   case odom::Autonomous::Skills:
     chassis::runSkillsPath();
+    break;
 
   default:
     printf("Invalid autonomous mode\n");

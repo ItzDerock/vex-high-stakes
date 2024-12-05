@@ -5,9 +5,9 @@
 #include <algorithm>
 #include <atomic>
 
-#define LIFT_KP 0.8
+#define LIFT_KP 2.2
 #define LIFT_KI 0
-#define LIFT_KD 0.35
+#define LIFT_KD 1.8
 
 // PROS brake mode doesn't work, so we have to PID ourselves
 // Each motor gets its own PID, target is negative of each other

@@ -7,7 +7,7 @@ int chainedMovementCount = 0;
 float distanceTravelled = -1;
 odom::Autonomous odom::autonomous = odom::Autonomous::None;
 
-PIDController odom::turnPID(5, 0, 25);
+PIDController odom::turnPID(5, 0, 27);
 PIDController odom::drivePID(32, 0, 20);
 
 ExitCondition odom::lateralLargeExit(LATERAL_LARGE_EXIT);
