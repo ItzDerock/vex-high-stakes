@@ -1,5 +1,4 @@
 #include "../config.hpp"
-#include "main.h"
 #include "robot/subsystems.hpp"
 #include "robot/utils.hpp"
 #include <atomic>
@@ -57,7 +56,7 @@ void check_for_interrupts() {
       } else {
         // if redirect interrupt, move backwards for 250ms
         intake_motor_stg2.move(-250);
-        pros::delay(250);
+        pros::delay(500);
       }
 
       // and unlock the controls

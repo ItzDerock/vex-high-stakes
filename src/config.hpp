@@ -87,13 +87,12 @@ extern pros::adi::Pneumatics wings_right;
 // todo: separate wings
 
 ///// Blocker
-extern pros::adi::Pneumatics blocker_1;
-extern pros::adi::Pneumatics blocker_2;
+extern pros::adi::Pneumatics grabber_1;
+extern pros::adi::Pneumatics grabber_2;
 
 ///// Intake
 extern pros::Motor intake_motor_stg1; // outer intake
 extern pros::Motor intake_motor_stg2; // disk ring intake
-extern pros::MotorGroup intake_motor;
 extern pros::Optical intake_sensor;
 
 //// Lift

@@ -1,8 +1,11 @@
 #pragma once
 #include "ExitCondition.hpp"
 #include "PID.hpp"
-#include "main.h"
 #include "position.hpp"
+#include "pros/rtos.hpp"
+#include <string>
+#include <sys/types.h>
+#include <vector>
 
 /****************
  * CONSTANTS for settlement behavior
@@ -135,13 +138,12 @@ void waitUntilDistance(double distance, uint timeout = 10'000);
 /**
  * Autonomous enum
  */
-// enum class Autonomous { ScoreLeft, ScoreSimple, TouchBar, Skills, None };
-enum class Autonomous { None, Skills, SixBall, TouchBar, Defense };
+enum class Autonomous { None, Skills };
 
 /**
  * follow pure pursuit path
  */
-void follow(std::vector<odom::RobotPosition> &pathPoints, float lookahead,
+void follow(std::vector<odom::RobotPosition> *pathPoints, float lookahead,
             int timeout, bool forwards, bool async);
 
 /**
@@ -152,8 +154,7 @@ void loadPaths(std::vector<std::string> const &files);
 /**
  * Returns a path from the cache.
  */
-std::shared_ptr<std::vector<odom::RobotPosition>>
-getPath(std::string const &path);
+std::vector<odom::RobotPosition> *getPath(std::string const &path);
 
 extern Autonomous autonomous;
 

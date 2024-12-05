@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 namespace odom {
 
 struct RobotPosition {
@@ -11,25 +12,25 @@ struct RobotPosition {
   RobotPosition(double x, double y, double theta) : x(x), y(y), theta(theta) {}
 
   // subtract operator
-  RobotPosition operator-(const RobotPosition& other) const {
+  RobotPosition operator-(const RobotPosition &other) const {
     return RobotPosition(x - other.x, y - other.y, theta - other.theta);
   }
 
   // add operator
-  RobotPosition operator+(const RobotPosition& other) const {
+  RobotPosition operator+(const RobotPosition &other) const {
     return RobotPosition(x + other.x, y + other.y, theta + other.theta);
   }
 
   // multiply operator
-  double operator*(const RobotPosition& other) const {
+  double operator*(const RobotPosition &other) const {
     return this->x * other.x + this->y * other.y;
   }
 
-  RobotPosition operator*(const double& other) const {
+  RobotPosition operator*(const double &other) const {
     return RobotPosition(x * other, y * other, theta);
   }
 
-  double distance(const RobotPosition& other) const {
+  double distance(const RobotPosition &other) const {
     return std::hypot(this->x - other.x, this->y - other.y);
   }
 
@@ -43,4 +44,4 @@ struct RobotPosition {
   }
 };
 
-}  // namespace odom
+} // namespace odom

@@ -5,8 +5,6 @@
 #include <atomic>
 
 #include "../config.hpp"
-#include "main.h"
-#include "robot/logger.hpp"
 #include "robot/utils.hpp"
 
 #define ODOM_DEBUG false

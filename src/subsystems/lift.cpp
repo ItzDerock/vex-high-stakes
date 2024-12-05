@@ -1,13 +1,13 @@
 #include "../config.hpp"
-#include "main.h"
 #include "pros/rtos.hpp"
 #include "robot/PID.hpp"
 #include "robot/subsystems.hpp"
+#include <algorithm>
 #include <atomic>
 
 #define LIFT_KP 0.8
 #define LIFT_KI 0
-#define LIFT_KD 0.2
+#define LIFT_KD 0.35
 
 // PROS brake mode doesn't work, so we have to PID ourselves
 // Each motor gets its own PID, target is negative of each other
@@ -17,7 +17,7 @@ PIDController rightLiftPID(LIFT_KP, LIFT_KI, LIFT_KD);
 std::atomic<double> targetLiftPosition;
 
 // lift positions {REST, HIGH, ALLIANCE}
-double liftPositions[3] = {0, 4.45 * 360, 2.7 * 360};
+double subsystems::liftPositions[3] = {45, 4.45 * 360, 2.7 * 360};
 int currentLiftPosition = 0;
 
 void internalLiftLoop() {
@@ -34,6 +34,9 @@ void internalLiftLoop() {
 
     double leftOut = leftLiftPID.update(-1 * leftError);
     double rightOut = rightLiftPID.update(-1 * rightError);
+
+    leftOut = std::max(std::min(leftOut, 127.0), -70.0);
+    rightOut = std::max(std::min(rightOut, 127.0), -70.0);
 
     lift_left.move(leftOut);
     lift_right.move(rightOut);

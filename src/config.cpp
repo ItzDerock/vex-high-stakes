@@ -52,8 +52,8 @@ OdomIntegratedSensor odom_right(drive_right_back, (double)DRIVE_TRACK_WIDTH / 2,
 // OdomSensor odom_middle(odom_middle_sensor, 4, 1, ODOMETRY_WHEEL_DIAMETER);
 
 pros::Imu inertial(ODOM_INERTIAL);
-pros::adi::Pneumatics blocker_1(BLOCKER_1, false);
-pros::adi::Pneumatics blocker_2(BLOCKER_2, false);
+pros::adi::Pneumatics grabber_1(BLOCKER_1, false);
+pros::adi::Pneumatics grabber_2(BLOCKER_2, false);
 
 pros::Optical intake_sensor(INTAKE_SENSOR_PORT);
 

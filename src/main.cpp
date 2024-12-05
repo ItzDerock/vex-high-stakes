@@ -2,7 +2,6 @@
 
 #include "config.hpp"
 #include "pros-mpeg/mpeg.hpp"
-#include "pros/abstract_motor.hpp"
 #include "pros/misc.h"
 #include "robot/chassis.hpp"
 #include "robot/odom.hpp"
@@ -24,7 +23,7 @@ void initialize() {
   subsystems::initLiftTask();
 
   // load pure pursuit paths
-  odom::loadPaths({"/usd/skills/push-left.txt", "/usd/pathtest.txt"});
+  odom::loadPaths({"/usd/skills/TLtTR3ring.txt", "/usd/pathtest.txt"});
 
   static MPEGPlayer mpeg("/usd/game.mpeg", lv_scr_act());
   screen::initAutonSelector(&mpeg);
@@ -61,7 +60,14 @@ void competition_initialize() {}
  */
 void autonomous() {
   odom::RobotPosition start = odom::getPosition();
-  // TODO: implement autonomous routines for this competition
+
+  switch (odom::autonomous) {
+  case odom::Autonomous::Skills:
+    chassis::runSkillsPath();
+
+  default:
+    printf("Invalid autonomous mode\n");
+  }
 }
 
 /**
@@ -139,8 +145,8 @@ void opcontrol() {
 
     // grabber on DIGITAL_L2
     if (master.get_digital_new_press(DIGITAL_L2)) {
-      blocker_1.toggle();
-      blocker_2.toggle();
+      grabber_1.toggle();
+      grabber_2.toggle();
     }
 
     // reversing the drivetrain

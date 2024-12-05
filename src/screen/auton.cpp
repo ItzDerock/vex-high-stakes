@@ -61,17 +61,7 @@ static void reset_position_event_cb(lv_event_t *event) {
   if (code == LV_EVENT_CLICKED) {
     switch (odom::autonomous) {
     case odom::Autonomous::Skills:
-      odom::reset(
-          {-35, -70 + (double)DRIVE_TRACK_WIDTH / 2, utils::degToRad(90)});
-      break;
-
-    case odom::Autonomous::SixBall:
-      odom::reset(
-          {-8, -70 + (double)DRIVE_TRACK_WIDTH / 2, utils::degToRad(90)});
-      break;
-
-    case odom::Autonomous::Defense:
-      odom::reset({-60, -40, M_PI});
+      odom::reset({-50, 0, utils::degToRad(270)});
       break;
 
     default:

@@ -15,6 +15,7 @@ extern std::atomic<bool> intakeRedirectMode;
 
 /* LIFT Subsystem */
 
+extern double liftPositions[3];
 void initLiftTask();
 void setTargetLiftPosition(double position);
 void cycleLiftPosition();

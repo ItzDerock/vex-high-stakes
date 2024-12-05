@@ -345,7 +345,6 @@ void odom::turnTo(double degrees, double timeout, double maxSpeed) {
 
     // constrain the output
     power = std::clamp(power, -maxSpeed, maxSpeed);
-    printf("power: %f\n", power);
     chassis::move(-power, power);
 
     pros::delay(10);
