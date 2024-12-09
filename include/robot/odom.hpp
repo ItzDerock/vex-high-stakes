@@ -14,7 +14,7 @@
 #define LATERAL_LARGE_EXIT 4, 300
 #define LATERAL_SMALL_EXIT 1, 100
 #define ANGULAR_LARGE_EXIT 3, 300
-#define ANGULAR_SMALL_EXIT 1, 150
+#define ANGULAR_SMALL_EXIT 2, 150
 
 #define CHAINED_LATERAL_LARGE_EXIT 4, 100
 #define CHAINED_LATERAL_SMALL_EXIT 1, 50
@@ -80,6 +80,10 @@ struct MoveToPoseParams {
   bool exitOnStall = false;
   float stallTime = 50;
   float stallThreshold = 0.5; // inches/sec
+
+  // especially useful in this comp
+  float maxSpeedWhenClose = 127;
+  float closeThreshold = 5;
 };
 
 /**
@@ -138,7 +142,7 @@ void waitUntilDistance(double distance, uint timeout = 10'000);
 /**
  * Autonomous enum
  */
-enum class Autonomous { None, Skills };
+enum class Autonomous { None, Skills, SoloAWP, Rush };
 
 /**
  * follow pure pursuit path

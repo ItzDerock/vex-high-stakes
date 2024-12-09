@@ -246,11 +246,18 @@ void odom::moveTo(float x, float y, float theta, int timeout,
     float lateralOut = drivePID.update(lateralError);
     float angularOut = turnPID.update(angularErrorDeg);
 
+    // figure out the right max spedd
+    const float maxSpeed =
+        std::min(std::abs(lateralError) < params.closeThreshold
+                     ? params.maxSpeedWhenClose
+                     : params.maxSpeed,
+                 params.maxSpeed);
+
     // apply restrictions on angular speed
-    angularOut = std::clamp(angularOut, -params.maxSpeed, params.maxSpeed);
+    angularOut = std::clamp(angularOut, -maxSpeed, maxSpeed);
 
     // apply restrictions on lateral speed
-    lateralOut = std::clamp(lateralOut, -params.maxSpeed, params.maxSpeed);
+    lateralOut = std::clamp(lateralOut, -maxSpeed, maxSpeed);
 
     // constrain lateral output by max accel
     if (!close)
@@ -261,9 +268,9 @@ void odom::moveTo(float x, float y, float theta, int timeout,
     const float radius = 1 / fabs(utils::getCurvature(pose, carrot));
     const float maxSlipSpeed(sqrt(params.chasePower * radius * 9.8));
     lateralOut = std::clamp(lateralOut, -maxSlipSpeed, maxSlipSpeed);
+
     // prioritize angular movement over lateral movement
-    const float overturn =
-        fabs(angularOut) + fabs(lateralOut) - params.maxSpeed;
+    const float overturn = fabs(angularOut) + fabs(lateralOut) - maxSpeed;
     if (overturn > 0)
       lateralOut -= lateralOut > 0 ? overturn : -overturn;
 
@@ -288,7 +295,8 @@ void odom::moveTo(float x, float y, float theta, int timeout,
     float leftPower = lateralOut + angularOut;
     float rightPower = lateralOut - angularOut;
     const float ratio =
-        std::max(std::fabs(leftPower), std::fabs(rightPower)) / params.maxSpeed;
+        std::max(std::fabs(leftPower), std::fabs(rightPower)) / maxSpeed;
+
     if (ratio > 1) {
       leftPower /= ratio;
       rightPower /= ratio;

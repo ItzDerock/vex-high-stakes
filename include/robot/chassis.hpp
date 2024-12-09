@@ -19,5 +19,7 @@ void setChassisBrake(pros::motor_brake_mode_e_t mode);
 // AUTON PATHS
 void initAutonRoutes();
 void runSkillsPath();
+void runSoloAWPPath();
+void runRushPath();
 
 } // namespace chassis

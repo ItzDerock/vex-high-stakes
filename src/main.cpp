@@ -23,6 +23,9 @@ void initialize() {
   subsystems::initInakeTask();
   subsystems::initLiftTask();
 
+  // grabber_1.extend();
+  // grabber_2.extend();
+
   // load pure pursuit paths
   odom::loadPaths({"/usd/skills/TLtTR3ring.txt", "/usd/pathtest.txt"});
 
@@ -60,11 +63,17 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
-  odom::RobotPosition start = odom::getPosition();
-
   switch (odom::autonomous) {
   case odom::Autonomous::Skills:
     chassis::runSkillsPath();
+    break;
+
+  case odom::Autonomous::SoloAWP:
+    chassis::runSoloAWPPath();
+    break;
+
+  case odom::Autonomous::Rush:
+    chassis::runRushPath();
     break;
 
   default:
@@ -126,8 +135,9 @@ void opcontrol() {
     // intake
     // DIGITAL_R1: intake in
     // DIGITAL_L1: intake out
-    double intake_speed = 127 * master.get_digital(DIGITAL_R1) -
-                          (master.get_digital(DIGITAL_R2)) * 127;
+    double MAX_SPEED = subsystems::maxIntakePower.load();
+    double intake_speed = MAX_SPEED * master.get_digital(DIGITAL_R1) -
+                          (master.get_digital(DIGITAL_R2)) * MAX_SPEED;
 
     intake_motor_stg1.move(intake_speed);
     if (!subsystems::lockIntakeControls.load()) {
@@ -135,14 +145,17 @@ void opcontrol() {
     }
 
     // toggle redirect
-    if (master.get_digital_new_press(DIGITAL_DOWN)) {
+    if (master.get_digital_new_press(DIGITAL_RIGHT)) {
       subsystems::intakeRedirectMode.store(
           !subsystems::intakeRedirectMode.load());
     }
 
     // lift
-    if (master.get_digital_new_press(DIGITAL_L1)) {
+    if (master.get_digital_new_press(DIGITAL_X)) {
       subsystems::cycleLiftPosition();
+    } else {
+      subsystems::moveLift(127 * master.get_digital(DIGITAL_UP) -
+                           60 * master.get_digital(DIGITAL_DOWN));
     }
 
     // grabber on DIGITAL_L2
@@ -170,7 +183,7 @@ void opcontrol() {
 
     // DIGITAL_UP to change the current team
     // long rumble = now color is red, short rumble = now color is blue
-    if (master.get_digital_new_press(DIGITAL_UP)) {
+    if (master.get_digital_new_press(DIGITAL_L1)) {
       subsystems::currentTeam =
           subsystems::currentTeam == subsystems::Color::RED
               ? subsystems::Color::BLUE

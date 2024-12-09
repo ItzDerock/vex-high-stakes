@@ -5,9 +5,11 @@
 #include <algorithm>
 #include <atomic>
 
-#define LIFT_KP 2.2
+#define LIFT_KP 1.4
 #define LIFT_KI 0
 #define LIFT_KD 1.8
+#define LIFT_UPPER_LIMIT 3.5 * 360
+#define LIFT_LOWER_LIMIT 0
 
 // PROS brake mode doesn't work, so we have to PID ourselves
 // Each motor gets its own PID, target is negative of each other
@@ -15,13 +17,19 @@ PIDController leftLiftPID(LIFT_KP, LIFT_KI, LIFT_KD);
 PIDController rightLiftPID(LIFT_KP, LIFT_KI, LIFT_KD);
 
 std::atomic<double> targetLiftPosition;
+std::atomic<bool> manualLiftOverride(false);
 
 // lift positions {REST, HIGH, ALLIANCE}
-double subsystems::liftPositions[3] = {45, 4.45 * 360, 2.7 * 360};
+double subsystems::liftPositions[3] = {0, 4.45 * 360, 2.7 * 360};
 int currentLiftPosition = 0;
 
 void internalLiftLoop() {
   while (true) {
+    if (manualLiftOverride.load()) {
+      pros::delay(10);
+      continue;
+    }
+
     // left lift is more positive as going up
     // right lift is more negative as going up
     // so we invert so both are positive
@@ -70,4 +78,27 @@ void subsystems::cycleLiftPosition() {
   }
 
   setTargetLiftPosition(liftPositions[currentLiftPosition]);
+}
+
+/**
+ * Power from -127 to 127
+ * Temporarily disables PID, PID is only used to hold lift position
+ */
+void subsystems::moveLift(double power) {
+  // If lift was previously moving, but is now done moving, set target to
+  // current position
+  if (power == 0 && manualLiftOverride.load()) {
+    setTargetLiftPosition(lift_left.get_position());
+    manualLiftOverride.store(false);
+    return;
+  }
+
+  // otherwise, if power is 0, do nothing, let bg PID handle
+  if (power == 0)
+    return;
+
+  // lastly, move it and prevent PID from interfering
+  manualLiftOverride.store(true);
+  lift_left.move(power);
+  lift_right.move(power);
 }

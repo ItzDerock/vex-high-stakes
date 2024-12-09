@@ -4,18 +4,20 @@
 #include <atomic>
 #include <cstdint>
 #include <queue>
+#include <system_error>
 
 #define NEAR_THRESHOLD 200
 #define COLOR_RED 0
 #define COLOR_BLUE 229
 #define COLOR_THRESHOLD 20
-#define MOVES_TILL_STOP 4.2 * 360
-#define MOVES_TILL_REDIRECT 3.95 * 360
+#define MOVES_TILL_STOP 4.1 * 360
+#define MOVES_TILL_REDIRECT 3.8 * 360
+#define MOVES_TILL_SLOWDOWN 3.2 * 360
 
 // #define INTAKE_DEBUG true
 
 struct Interrupt {
-  enum Type { SORT, REDIRECT };
+  enum Type { SORT, REDIRECT, SLOW_DOWN };
   Type type;
   double position;
 
@@ -31,6 +33,7 @@ std::priority_queue<Interrupt> interrupts;
 std::atomic<bool> subsystems::lockIntakeControls(false);
 std::atomic<bool> subsystems::intakeRedirectMode(false);
 std::atomic<subsystems::Color> subsystems::currentTeam(NONE);
+std::atomic<double> subsystems::maxIntakePower(127);
 
 void check_for_interrupts() {
   while (true) {
@@ -49,15 +52,33 @@ void check_for_interrupts() {
       subsystems::lockIntakeControls.store(true);
       double current_velocity = intake_motor_stg2.get_target_velocity();
 
-      if (next_interrupt.type == Interrupt::SORT) {
-        // if sort interrupt, stop motor for 10millis
+      switch (next_interrupt.type) {
+      case Interrupt::SORT:
         intake_motor_stg2.move(-127);
         pros::delay(100);
-      } else {
-        // if redirect interrupt, move backwards for 250ms
-        intake_motor_stg2.move(-250);
-        pros::delay(500);
+        break;
+
+      case Interrupt::REDIRECT:
+        intake_motor_stg2.move(-127);
+        pros::delay(400);
+        subsystems::maxIntakePower.store(127);
+        break;
+
+      case Interrupt::SLOW_DOWN:
+        intake_motor_stg2.move(80);
+        subsystems::maxIntakePower.store(80);
+        break;
       }
+
+      // if (next_interrupt.type == Interrupt::SORT) {
+      //   // if sort interrupt, stop motor for 10millis
+      //   intake_motor_stg2.move(-127);
+      //   pros::delay(100);
+      // } else {
+      //   // if redirect interrupt, move backwards for 250ms
+      //   intake_motor_stg2.move(-127);
+      //   pros::delay(500);
+      // }
 
       // and unlock the controls
       intake_motor_stg2.move_velocity(current_velocity);
@@ -87,6 +108,7 @@ void intake_loop() {
     uint32_t color_sum = 0; // color * 100, since is integer and we want to keep
                             // 2 decimal precision
     uint16_t color_count = 0;
+    int isGoodFor = 0;
 
     // attempt to classify the color
     do {
@@ -102,10 +124,14 @@ void intake_loop() {
 
       pros::delay(10);
 
+      if (intake_sensor.get_proximity() < NEAR_THRESHOLD && (isGoodFor++) > 5) {
+        break;
+      }
+
 #ifdef INTAKE_DEBUG
       printf("d: %d\n", intake_sensor.get_proximity());
 #endif
-    } while (intake_sensor.get_proximity() > NEAR_THRESHOLD);
+    } while (true);
 
     double average_color = (double)color_sum / (100 * color_count);
     printf("Finished getting avg color, proximity is %d\n",
@@ -129,6 +155,8 @@ void intake_loop() {
     printf("classified color: %d\n", detected_color);
     printf("motor position is: %f\n", intake_motor_stg2.get_position());
 
+    // check team
+
     // if current team is NONE, ignore
     // otherwise, if differing ring color, eject it
     if (detected_color != subsystems::currentTeam.load() &&
@@ -138,8 +166,13 @@ void intake_loop() {
                                             MOVES_TILL_STOP});
     }
 
-    // if redirect mode is on, append redirect interrupt
-    else if (subsystems::intakeRedirectMode.load()) {
+    // if redirect mode is on, append redirect and slowdown interrupt
+    else if (subsystems::intakeRedirectMode.load() &&
+             detected_color == subsystems::currentTeam.load()) {
+      interrupts.push(Interrupt{.type = Interrupt::SLOW_DOWN,
+                                .position = intake_motor_stg2.get_position() +
+                                            MOVES_TILL_SLOWDOWN});
+
       interrupts.push(Interrupt{.type = Interrupt::REDIRECT,
                                 .position = intake_motor_stg2.get_position() +
                                             MOVES_TILL_REDIRECT});

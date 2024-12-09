@@ -1,9 +1,7 @@
 #include "../config.hpp"
-#include "pros/device.hpp"
 #include "pros/rtos.hpp"
 #include "robot/chassis.hpp"
 #include "robot/odom.hpp"
-#include "robot/subsystems.hpp"
 
 // #define GO_FOR_STAKES
 
@@ -87,11 +85,32 @@ void chassis::runSkillsPath() {
   grabber_2.retract();
   pros::delay(500);
   odom::moveDistance(10);
-  intake_motor_stg2.move(127);
+  intake_motor_stg2.move(80);
 
   // CROSS MAP TIME
-  // odom::moveTo(44, -30, 225, 5'000, {});
+  odom::moveTo(14, -54, 90, 5'000, {.lead = 0.4});
+  intake_motor_stg2.move(0);
+  odom::turnTo(236);
 
-  // odom::moveTo(-23, -44, 180, 2'500, {.chasePower = 80, .lead = 0.5});
-  // odom::moveTo(-50, -55, 45, 2'000, {.maxSpeed = 60});
+  // grab the blue thingy
+  odom::moveTo(42, -35, 240, 6'000, {.maxSpeed = 60, .forwards = false});
+  odom::moveTo(60, -53, 0, 4'000, {.maxSpeed = 90, .forwards = false});
+  chassis::move(-127, -127);
+
+  pros::delay(3000); // let go
+  intake_motor_stg2.move(-127);
+  grabber_1.retract();
+  grabber_2.retract();
+  pros::delay(500);
+  odom::turnTo(305);
+  odom::moveDistance(12);
+
+  // odom::moveTo(51, -68, 0, 4'000, {.forwards = false});
+
+  // drop it off
+  // grabber_1.retract();
+  // grabber_2.retract();
+  // pros::delay(250);
+  // odom::turnTo(305, 0.5);
+  // odom::moveTo(54, -35, 0, 2'000, {});
 }
