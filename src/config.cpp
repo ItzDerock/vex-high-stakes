@@ -52,17 +52,17 @@ OdomIntegratedSensor odom_right(drive_right_back, (double)DRIVE_TRACK_WIDTH / 2,
 // OdomSensor odom_middle(odom_middle_sensor, 4, 1, ODOMETRY_WHEEL_DIAMETER);
 
 pros::Imu inertial(ODOM_INERTIAL);
-pros::adi::Pneumatics grabber_1(BLOCKER_1, false);
-pros::adi::Pneumatics grabber_2(BLOCKER_2, false);
+pros::adi::Pneumatics grabber_1(BLOCKER_1, false, true);
+pros::adi::Pneumatics grabber_2(BLOCKER_2, false, true);
 
 pros::Optical intake_sensor(INTAKE_SENSOR_PORT);
 
 // we need individual control of the intake motors
 pros::Motor intake_motor_stg1(INTAKE_PORT_1, pros::v5::MotorGear::green);
-pros::Motor intake_motor_stg2(INTAKE_PORT_2, pros::v5::MotorGear::green);
+pros::Motor intake_motor_stg2(-INTAKE_PORT_2, pros::v5::MotorGear::green);
 
 // Lift
-pros::Motor lift_left(LIFT_LEFT);
-pros::Motor lift_right(-LEFT_RIGHT);
+pros::Motor lift(LIFT);
+pros::Rotation lift_sensor(LIFT_ROT_SENSOR_PORT);
 
 #undef SHARED

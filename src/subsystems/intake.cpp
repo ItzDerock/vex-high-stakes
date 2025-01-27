@@ -4,7 +4,6 @@
 #include <atomic>
 #include <cstdint>
 #include <queue>
-#include <system_error>
 
 #define NEAR_THRESHOLD 200
 #define COLOR_RED 0

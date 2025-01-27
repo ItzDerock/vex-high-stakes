@@ -66,6 +66,7 @@ in {
 
   # https://devenv.sh/packages/
   packages = with pkgs; [
+    bashInteractive
     gcc-arm-embedded
     pros-cli
     bear # build compile commands

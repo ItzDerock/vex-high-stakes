@@ -1,15 +1,21 @@
+
 #include "../config.hpp"
 #include "pros/rtos.hpp"
 #include "robot/chassis.hpp"
 #include "robot/odom.hpp"
+#include "robot/subsystems.hpp"
 
 // #define GO_FOR_STAKES
 
 void chassis::runSkillsPath() {
+  subsystems::moveLift(127);
+  pros::delay(800);
+  subsystems::moveLift(0);
   odom::startChainedMovement(8);
 
   // 1. Back up to grab the mogo
   odom::moveDistance(-8, 600, {.chasePower = 30});
+  subsystems::setTargetLiftPosition(30);
   odom::turnTo(180);
   odom::moveTo(-50, 16, 180, 4'000,
                {
@@ -36,7 +42,7 @@ void chassis::runSkillsPath() {
   odom::moveTo(-23, 42, 0, 2'500, {.chasePower = 80, .lead = 0.5});
   pros::delay(300);
   odom::moveTo(-65, 42, 270, 5'000,
-               {.maxSpeed = 40, .chasePower = 40, .exitOnStall = true});
+               {.maxSpeed = 80, .chasePower = 40, .exitOnStall = true});
 
   // last ring
   odom::moveDistance(-24);

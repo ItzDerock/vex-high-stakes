@@ -5,22 +5,24 @@
 #include <algorithm>
 #include <atomic>
 
-#define LIFT_KP 1.4
+// #define LIFT_KP 0.2
+// #define LIFT_KI 0
+// #define LIFT_KD 0.8
+#define LIFT_KP 0.02
 #define LIFT_KI 0
-#define LIFT_KD 1.8
+#define LIFT_KD 0.15
 #define LIFT_UPPER_LIMIT 3.5 * 360
 #define LIFT_LOWER_LIMIT 0
 
 // PROS brake mode doesn't work, so we have to PID ourselves
 // Each motor gets its own PID, target is negative of each other
-PIDController leftLiftPID(LIFT_KP, LIFT_KI, LIFT_KD);
-PIDController rightLiftPID(LIFT_KP, LIFT_KI, LIFT_KD);
+PIDController liftPID(LIFT_KP, LIFT_KI, LIFT_KD);
 
 std::atomic<double> targetLiftPosition;
 std::atomic<bool> manualLiftOverride(false);
 
 // lift positions {REST, HIGH, ALLIANCE}
-double subsystems::liftPositions[3] = {0, 4.45 * 360, 2.7 * 360};
+double subsystems::liftPositions[3] = {164, 41, -1.4 * 360};
 int currentLiftPosition = 0;
 
 void internalLiftLoop() {
@@ -30,24 +32,10 @@ void internalLiftLoop() {
       continue;
     }
 
-    // left lift is more positive as going up
-    // right lift is more negative as going up
-    // so we invert so both are positive
-    double leftPosition = lift_left.get_position();
-    double rightPosition = lift_right.get_position();
-
-    // calculate error
-    double leftError = leftPosition - targetLiftPosition;
-    double rightError = rightPosition - targetLiftPosition;
-
-    double leftOut = leftLiftPID.update(-1 * leftError);
-    double rightOut = rightLiftPID.update(-1 * rightError);
-
-    leftOut = std::max(std::min(leftOut, 127.0), -70.0);
-    rightOut = std::max(std::min(rightOut, 127.0), -70.0);
-
-    lift_left.move(leftOut);
-    lift_right.move(rightOut);
+    // run loop
+    double liftError = lift_sensor.get_position() - targetLiftPosition.load();
+    double liftOut = liftPID.update(liftError);
+    lift.move(std::max(std::min(liftOut, 127.0), -127.0));
 
     pros::delay(10);
   }
@@ -56,12 +44,8 @@ void internalLiftLoop() {
 pros::Task *liftTask;
 void subsystems::initLiftTask() {
   // set motor to hold mode
-  lift_left.set_brake_mode_all(pros::MotorBrake::hold);
-  lift_right.set_brake_mode_all(pros::MotorBrake::hold);
-
-  // tare motors
-  lift_left.tare_position();
-  lift_right.tare_position();
+  lift.set_brake_mode_all(pros::MotorBrake::hold);
+  lift_sensor.reset_position();
 
   // start task
   liftTask = new pros::Task(internalLiftLoop, "lift");
@@ -88,7 +72,7 @@ void subsystems::moveLift(double power) {
   // If lift was previously moving, but is now done moving, set target to
   // current position
   if (power == 0 && manualLiftOverride.load()) {
-    setTargetLiftPosition(lift_left.get_position());
+    setTargetLiftPosition(lift_sensor.get_position());
     manualLiftOverride.store(false);
     return;
   }
@@ -99,6 +83,5 @@ void subsystems::moveLift(double power) {
 
   // lastly, move it and prevent PID from interfering
   manualLiftOverride.store(true);
-  lift_left.move(power);
-  lift_right.move(power);
+  lift.move(power);
 }

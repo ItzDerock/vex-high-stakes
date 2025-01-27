@@ -182,15 +182,16 @@ void opcontrol() {
     master.print(0, 0, (team_str + redirect_str).c_str());
 
     // DIGITAL_UP to change the current team
-    // long rumble = now color is red, short rumble = now color is blue
+    // long rumble = now color is red, short rumble = now color is bluee
+    // cycle: none, red, blue
     if (master.get_digital_new_press(DIGITAL_L1)) {
-      subsystems::currentTeam =
-          subsystems::currentTeam == subsystems::Color::RED
-              ? subsystems::Color::BLUE
-              : subsystems::Color::RED;
+      subsystems::Color current = subsystems::currentTeam.load();
+      subsystems::Color newTeam = (subsystems::Color)((current + 1) % 3);
+      subsystems::currentTeam.store(newTeam);
 
-      master.rumble(subsystems::currentTeam == subsystems::Color::RED ? "-"
-                                                                      : ".");
+      master.rumble(newTeam == subsystems::Color::RED    ? "-"
+                    : newTeam == subsystems::Color::BLUE ? "."
+                                                         : "..");
     }
 
     pros::delay(10);
