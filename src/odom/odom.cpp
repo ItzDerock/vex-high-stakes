@@ -1,10 +1,12 @@
 #include "robot/odom.hpp"
 
 #include <atomic>
+#include <cmath>
 #include <math.h>
 
 #include "../config.hpp"
 #include "pros/abstract_motor.hpp"
+#include "robot/position.hpp"
 #include "robot/utils.hpp"
 
 // #define ODOM_DEBUG true
@@ -252,6 +254,17 @@ void odom::reset(odom::RobotPosition startState) {
 }
 
 void odom::reset() { reset({0, 0, 0}); }
+
+void odom::setPosition(const odom::RobotPosition &position) {
+  mutex.take();
+
+  state->x = position.x;
+  state->y = position.y;
+  state->theta = position.theta;
+  velocity.store(infinity());
+
+  mutex.give();
+}
 
 odom::RobotPosition odom::getPosition(bool degrees, bool standardPos) {
   // take mutex to prevent reading while writing

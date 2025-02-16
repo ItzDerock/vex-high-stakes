@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <ostream>
 namespace odom {
 
 struct RobotPosition {
@@ -41,6 +42,12 @@ struct RobotPosition {
 
   float angle(odom::RobotPosition other) const {
     return std::atan2(other.y - this->y, other.x - this->x);
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const RobotPosition &pos) {
+    os << "{x: " << pos.x << ", y: " << pos.y << ", theta: " << pos.theta
+       << "}";
+    return os;
   }
 };
 

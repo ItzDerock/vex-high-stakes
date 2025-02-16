@@ -1,10 +1,6 @@
 # VEX 2024 - Over High Stakes
 This repository holds the C++ code for KCD's VEX 2024 High Stakes robot (95993A).
 
-# HEAVY WIP!
-Our robot has not been fully built yet so this code is not fully tested.
-Check out our previous year's code: [VEX 2023 - Over Under](https://github.com/ItzDerock/vex-over-under)
-
 ## Features:
 - Simple tank drive controls
 - 3 wheel odometry system
@@ -54,6 +50,7 @@ cmake --build build
   - Then use LibreOffice Impress, import > media > image gallery to import images
   - Then export as .pptx and import that to Google Slides
   - Kind of a pain, but most HTML/PDF -> PPTX converters mess up the formatting.
+- `scripts/find-ports.sh` - Reads the config.hpp file and finds all the ports used in the code, printing into a nice table.
 
 ## Converting videos:
 Install [`ffmpeg`](https://ffmpeg.org/) and run

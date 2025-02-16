@@ -58,6 +58,11 @@ void reset(RobotPosition startState);
 void reset();
 
 /**
+ * Sets the position of the robot.
+ */
+void setPosition(const odom::RobotPosition &position);
+
+/**
  * Initializes the odometry task.
  */
 void initalize();

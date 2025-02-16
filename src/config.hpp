@@ -5,27 +5,29 @@
 // ODOMETRY
 #define ODOMETRY_TICKS_PER_INCH 360.0 // ticks per inch
 #define ODOMETRY_WHEEL_DIAMETER 3.25  // inches
-#define ODOM_INERTIAL 15
+#define ODOM_INERTIAL 13
+#define ODOM_VERTICAL_PORT 2
+#define ODOM_HORIZONTAL_PORT 7
 
 // DRIVETRAIN
 #define DRIVETRAIN_GEAR_RATIO /* input 36 -> output 72 */ (double)36 / 72
 #define DRIVETRAIN_GEARBOX pros::v5::MotorGear::blue
-#define DRIVE_LEFT_FRONT 13
-#define DRIVE_LEFT_BACK 12
-#define DRIVE_LEFT_PTO 17
+#define DRIVE_LEFT_FRONT 9
+#define DRIVE_LEFT_BACK 19
+#define DRIVE_LEFT_PTO 4
 #define DRIVE_RIGHT_FRONT 8
-#define DRIVE_RIGHT_BACK 5
-#define DRIVE_RIGHT_PTO 4
+#define DRIVE_RIGHT_BACK 6
+#define DRIVE_RIGHT_PTO 5
 #define DRIVE_TRACK_WIDTH 12.5 // inches
 
 // LIFT
-#define LIFT 7
-#define LIFT_ROT_SENSOR_PORT 6
+#define LIFT 1
+#define LIFT_ROT_SENSOR_PORT 3
 
 // INTAKE
-#define INTAKE_PORT_1 -10
-#define INTAKE_PORT_2 -20
-#define INTAKE_SENSOR_PORT 11
+#define INTAKE_PORT_1 -3
+#define INTAKE_PORT_2 -10
+#define INTAKE_SENSOR_PORT 12
 
 // WINGS
 #define BLOCKER_1 'a'
@@ -94,7 +96,7 @@ extern pros::Optical intake_sensor;
 
 //// Lift
 extern pros::Motor lift;
-extern pros::Rotation lift_sensor;
+extern pros::adi::AnalogIn lift_position;
 
 // undefine SHARED macro to prevent accidental use
 #undef SHARED

@@ -52,8 +52,8 @@ OdomIntegratedSensor odom_right(drive_right_back, (double)DRIVE_TRACK_WIDTH / 2,
 // OdomSensor odom_middle(odom_middle_sensor, 4, 1, ODOMETRY_WHEEL_DIAMETER);
 
 pros::Imu inertial(ODOM_INERTIAL);
-pros::adi::Pneumatics grabber_1(BLOCKER_1, false, true);
-pros::adi::Pneumatics grabber_2(BLOCKER_2, false, true);
+pros::adi::Pneumatics grabber_1(BLOCKER_1, true, true);
+pros::adi::Pneumatics grabber_2(BLOCKER_2, true, true);
 
 pros::Optical intake_sensor(INTAKE_SENSOR_PORT);
 
@@ -63,6 +63,7 @@ pros::Motor intake_motor_stg2(-INTAKE_PORT_2, pros::v5::MotorGear::green);
 
 // Lift
 pros::Motor lift(LIFT);
-pros::Rotation lift_sensor(LIFT_ROT_SENSOR_PORT);
+// Potentiometer class not functional, returns errno 112 (EADDRINUSE)
+pros::adi::AnalogIn lift_position(LIFT_ROT_SENSOR_PORT);
 
 #undef SHARED

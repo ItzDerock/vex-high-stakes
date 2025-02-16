@@ -53,9 +53,9 @@ let
     # See note above postPatch for details.
     postInstall = ''
       # Verify that pros/autocomplete files are in the output directory
-      if ! [ -d "$out/lib/python3.11/site-packages/pros/autocomplete" ]; then
-        mkdir -p $out/lib/python3.11/site-packages/pros/autocomplete
-        cp -r pros/autocomplete/* $out/lib/python3.11/site-packages/pros/autocomplete/
+      if ! [ -d "$out/lib/python3.12/site-packages/pros/autocomplete" ]; then
+        mkdir -p $out/lib/python3.12/site-packages/pros/autocomplete
+        cp -r pros/autocomplete/* $out/lib/python3.12/site-packages/pros/autocomplete/
       fi
     '';
   };
@@ -70,6 +70,7 @@ in {
     gcc-arm-embedded
     pros-cli
     bear # build compile commands
+    cargo-v5 # field control
 
     (python3.withPackages (python-pkgs: with python-pkgs; [
       matplotlib

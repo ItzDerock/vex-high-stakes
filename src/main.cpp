@@ -63,6 +63,8 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
+  std::cout << "Running autonomous: " << (int)odom::autonomous << std::endl;
+
   switch (odom::autonomous) {
   case odom::Autonomous::Skills:
     chassis::runSkillsPath();

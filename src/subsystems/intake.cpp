@@ -9,9 +9,20 @@
 #define COLOR_RED 0
 #define COLOR_BLUE 229
 #define COLOR_THRESHOLD 20
-#define MOVES_TILL_STOP 4.1 * 360
-#define MOVES_TILL_REDIRECT 3.8 * 360
-#define MOVES_TILL_SLOWDOWN 3.2 * 360
+#define MOVES_TILL_STOP 0
+#define MOVES_TILL_REDIRECT 0
+#define MOVES_TILL_SLOWDOWN 0
+
+/**
+ * Changes the behavior of how the color is detected.
+ * Rising edge = immediately when the color sensor detects a ring.
+ * Falling edge = wait for when the color sensor finishes detecting a ring.
+ *
+ * |     |-- Ring (distance) --|
+ * | ____|                     |______
+ * d     ^ rising edge         ^ falling edge
+ */
+#define INTAKE_DETECT_ON_RISING_EDGE true
 
 // #define INTAKE_DEBUG true
 
@@ -33,6 +44,20 @@ std::atomic<bool> subsystems::lockIntakeControls(false);
 std::atomic<bool> subsystems::intakeRedirectMode(false);
 std::atomic<subsystems::Color> subsystems::currentTeam(NONE);
 std::atomic<double> subsystems::maxIntakePower(127);
+
+/**
+ * Compares a given hue with the COLOR_{RED,BLUE} constants
+ */
+subsystems::Color classify_color(double hue) {
+  return (
+      // hue is a wheel, [0, 360] so we can take advantage of angle
+      // functions
+      fabs(utils::angleError(hue, COLOR_RED)) < COLOR_THRESHOLD
+          ? subsystems::RED
+      : fabs(utils::angleError(hue, COLOR_BLUE)) < COLOR_THRESHOLD
+          ? subsystems::BLUE
+          : subsystems::NONE);
+}
 
 void check_for_interrupts() {
   while (true) {
@@ -69,16 +94,6 @@ void check_for_interrupts() {
         break;
       }
 
-      // if (next_interrupt.type == Interrupt::SORT) {
-      //   // if sort interrupt, stop motor for 10millis
-      //   intake_motor_stg2.move(-127);
-      //   pros::delay(100);
-      // } else {
-      //   // if redirect interrupt, move backwards for 250ms
-      //   intake_motor_stg2.move(-127);
-      //   pros::delay(500);
-      // }
-
       // and unlock the controls
       intake_motor_stg2.move_velocity(current_velocity);
       subsystems::lockIntakeControls.store(false);
@@ -97,12 +112,21 @@ void intake_loop() {
     printf("d: %d\n", distance);
 #endif
 
-    // check if NEAR on bottom intake sensor
+    // check if NEAR on intake sensor
     if (distance < NEAR_THRESHOLD) {
       pros::delay(10);
       continue;
     }
 
+#if INTAKE_DETECT_ON_RISING_EDGE
+    // loop until we get a valid color
+    subsystems::Color detected_color = subsystems::NONE;
+    do {
+      double color = intake_sensor.get_hue();
+      detected_color = classify_color(color);
+    } while (detected_color == subsystems::NONE &&
+             intake_sensor.get_proximity() < NEAR_THRESHOLD);
+#else
     // calculate an average color
     uint32_t color_sum = 0; // color * 100, since is integer and we want to keep
                             // 2 decimal precision
@@ -135,26 +159,10 @@ void intake_loop() {
     double average_color = (double)color_sum / (100 * color_count);
     printf("Finished getting avg color, proximity is %d\n",
            intake_sensor.get_proximity());
-
-    // hue is a wheel, [0, 360] so we can take advantage of angle functions
-    subsystems::Color detected_color =
-        fabs(utils::angleError(average_color, COLOR_RED)) < COLOR_THRESHOLD
-            ? subsystems::RED
-        : fabs(utils::angleError(average_color, COLOR_BLUE)) < COLOR_THRESHOLD
-            ? subsystems::BLUE
-            : subsystems::NONE;
-
-#ifdef INTAKE_DEBUG
-    printf("angle error red: %f\n",
-           fabs(utils::angleError(average_color, COLOR_RED)));
-    printf("angle error blue: %f\n",
-           fabs(utils::angleError(average_color, COLOR_BLUE)));
 #endif
 
     printf("classified color: %d\n", detected_color);
     printf("motor position is: %f\n", intake_motor_stg2.get_position());
-
-    // check team
 
     // if current team is NONE, ignore
     // otherwise, if differing ring color, eject it
@@ -165,17 +173,14 @@ void intake_loop() {
                                             MOVES_TILL_STOP});
     }
 
-    // if redirect mode is on, append redirect and slowdown interrupt
-    else if (subsystems::intakeRedirectMode.load() &&
-             detected_color == subsystems::currentTeam.load()) {
-      interrupts.push(Interrupt{.type = Interrupt::SLOW_DOWN,
-                                .position = intake_motor_stg2.get_position() +
-                                            MOVES_TILL_SLOWDOWN});
-
-      interrupts.push(Interrupt{.type = Interrupt::REDIRECT,
-                                .position = intake_motor_stg2.get_position() +
-                                            MOVES_TILL_REDIRECT});
+// if we're doing rising edge detection, we need to wait until the falling
+// edge to prevent
+#if INTAKE_DETECT_ON_RISING_EDGE
+    while (intake_sensor.get_proximity() > NEAR_THRESHOLD &&
+           classify_color(intake_sensor.get_hue()) == detected_color) {
+      pros::delay(10);
     }
+#endif
 
     pros::delay(10);
   }

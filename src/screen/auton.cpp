@@ -61,7 +61,7 @@ static void reset_position_event_cb(lv_event_t *event) {
   if (code == LV_EVENT_CLICKED) {
     switch (odom::autonomous) {
     case odom::Autonomous::Skills:
-      odom::reset({-60, 0, utils::degToRad(270)});
+      odom::reset({-53, 0, utils::degToRad(270)});
       break;
 
     case odom::Autonomous::SoloAWP:
