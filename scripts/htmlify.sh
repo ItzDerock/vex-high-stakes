@@ -8,8 +8,8 @@ FILES=(
   "./src/*"
   "./src/**/*"
   "./scripts/*"
-  "./include/gif-pros/*"
   "./include/robot/*"
+  "./include/pros-mpeg/*"
 )
 
 # Ext override map
@@ -18,6 +18,9 @@ EXT_OVERRIDES=(
   "sh:bash"
   "h:c"
 )
+
+declare -A FILE_OVERRIDES
+FILE_OVERRIDES["./src/screen/pl_mpeg.c"]="<p>This file has been omitted as it is 3,486 lines and is available to view on the GitHub repository.</p>"
 
 # Output file
 OUTPUT="index.html"
@@ -31,15 +34,17 @@ cat <<EOF > $OUTPUT
   <title>My Project</title>
 
   <!-- PrismJS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/themes/prism-coy.min.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/plugins/line-numbers/prism-line-numbers.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-coy.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
 
   <style>
     body {
       font-family: sans-serif;
       margin: 0;
       padding: 8px;
+      font-size: 0.75rem;
     }
+
     pre {
       margin: 0;
     }
@@ -58,7 +63,8 @@ cat <<EOF > $OUTPUT
       margin-bottom: 0.25rem;
     }
 
-    pre[class*="language-"] {
+    pre[class*="language-"],
+    code[class*="language-"] {
       max-height: inherit !important;
       overflow: hidden !important;
 
@@ -68,7 +74,9 @@ cat <<EOF > $OUTPUT
 
     code[class*="language"] {
       overflow: hidden !important;
+      font-size: 0.75rem;
     }
+  }
   </style>
 </head>
 <body>
@@ -104,29 +112,30 @@ for FILE in ${FILES[@]}; do
 
   # Append the title
   echo "<h1>$FILE</h1>" >> $OUTPUT
-  
+
   # Get the last git commit message and date
   LAST_COMMIT=$(git log -1 --pretty=format:"%s (%ad)" --date=short $FILE)
   echo "<p><strong>Last commit:</strong> $LAST_COMMIT</p>" >> $OUTPUT
 
-  # Append the code
-  echo "<pre><code class=\"language-$FILE_EXT line-numbers\">" >> $OUTPUT
-
-  cat $FILE | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g; s/'"'"'/\&#39;/g' >> $OUTPUT
-  echo "</code></pre>" >> $OUTPUT
-
-  # cat $FILE | sed -e 's/^/    /' | sed -e 's/  / \&nbsp;/' | sed -e 's/$/<br>/' >> $OUTPUT
+  # Override content if required
+  if [ -z "${FILE_OVERRIDES[$FILE]}" ]; then
+    # Append the code
+    echo -n "<pre class=\"line-numbers language-$FILE_EXT\" style=\"white-space: pre-wrap;\"><code>" >> $OUTPUT
+    cat $FILE | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g; s/'"'"'/\&#39;/g' >> $OUTPUT
+    echo -n "</code></pre>" >> $OUTPUT
+  else
+    echo "${FILE_OVERRIDES[$FILE]}" >> $OUTPUT
+  fi
 done
 
 # Footer
 cat <<EOF >> $OUTPUT
   <!-- PrismJS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/prism.min.js"></script> 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/components/prism-c.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/components/prism-cpp.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/components/prism-bash.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/plugins/line-numbers/prism-line-numbers.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
 </body>
 </html>
 EOF
-
