@@ -65,7 +65,8 @@ static void reset_position_event_cb(lv_event_t *event) {
       break;
 
     case odom::Autonomous::SoloAWP:
-      odom::reset({-60, 48, utils::degToRad(315)});
+      // odom::reset({-60, 48, utils::degToRad(315)});
+      odom::reset({-58, 14, utils::degToRad(225)});
       break;
 
     case odom::Autonomous::Rush:

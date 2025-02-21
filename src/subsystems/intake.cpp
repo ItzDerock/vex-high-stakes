@@ -9,7 +9,7 @@
 #define COLOR_RED 0
 #define COLOR_BLUE 229
 #define COLOR_THRESHOLD 20
-#define MOVES_TILL_STOP 0
+#define MOVES_TILL_STOP 18
 #define MOVES_TILL_REDIRECT 0
 #define MOVES_TILL_SLOWDOWN 0
 
@@ -124,6 +124,7 @@ void intake_loop() {
     do {
       double color = intake_sensor.get_hue();
       detected_color = classify_color(color);
+      pros::delay(5);
     } while (detected_color == subsystems::NONE &&
              intake_sensor.get_proximity() < NEAR_THRESHOLD);
 #else
@@ -161,13 +162,15 @@ void intake_loop() {
            intake_sensor.get_proximity());
 #endif
 
-    printf("classified color: %d\n", detected_color);
-    printf("motor position is: %f\n", intake_motor_stg2.get_position());
+    printf("[intake] classified color: %d\n", detected_color);
+    printf("[intake] motor position is: %f\n",
+           intake_motor_stg2.get_position());
 
     // if current team is NONE, ignore
     // otherwise, if differing ring color, eject it
     if (detected_color != subsystems::currentTeam.load() &&
         subsystems::currentTeam.load() != subsystems::NONE) {
+      std::cout << "[intake] publishing sort interrupt" << std::endl;
       interrupts.push(Interrupt{.type = Interrupt::SORT,
                                 .position = intake_motor_stg2.get_position() +
                                             MOVES_TILL_STOP});
