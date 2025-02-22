@@ -4,17 +4,20 @@
 #include "robot/odom.hpp"
 #include "robot/subsystems.hpp"
 
+#define TOP_SIDE_DOUBLE true
+
 void chassis::runSoloAWPPath() {
   grabber_1.extend();
   grabber_2.extend();
   subsystems::setTargetLiftPosition(4200);
-  pros::delay(800);
   odom::startChainedMovement(6);
+  odom::moveDistance(3);
+  pros::delay(800);
   subsystems::setTargetLiftPosition(subsystems::liftPositions[0]);
 
   // top left mogo
-  odom::moveTo(-36, 17, 225, 5'000, {.forwards = false});
-  odom::moveDistance(-6);
+  odom::moveTo(-39, 19, 225, 5'000, {.forwards = false}); // cm1
+  odom::moveDistance(-6, 2'000, {.maxSpeed = 80});        // cm2
   grabber_1.retract();
   grabber_2.retract();
   pros::delay(200);
@@ -22,12 +25,32 @@ void chassis::runSoloAWPPath() {
   // grab rings
   intake_motor_stg1.move(127);
   intake_motor_stg2.move(127);
-  odom::moveTo(-10, 34, 45, 5'000, {.lead = 0});
-  odom::moveDistance(-10);
-  odom::moveTo(-23, 41, 0, 5'000, {.lead = 0});
+
+#ifdef TOP_SIDE_DOUBLE
+  odom::moveTo(-11, 40, 45, 5'000, {.maxSpeed = 100, .lead = 0}); // cm3
+  odom::moveDistance(-10);                                        // cm4
+#endif
+  odom::moveTo(-27, 50, 0, 5'000, {.lead = 0}); // cm5
   pros::delay(500);
 
-  odom::moveTo(-46, 0, 180, 5'000, {.lead = 0.3});
+  odom::moveTo(-52, 0, 180, 5'000, {.lead = 0.3}); // cm6
+
+  return;
+
+  // cross map
+  odom::startChainedMovement(6);
+  odom::moveTo(-52, -24, 180, 5'000, {}); // cm1
+  grabber_1.extend();
+  grabber_2.extend();
+  intake_motor_stg1.move(0);
+  intake_motor_stg2.move(0);
+  odom::moveTo(-52, -35, 180, 5'000, {}); // cm2
+
+  // grab secong mogo
+  odom::moveTo(-38, -32, 180, 5'000,
+               {.lead = 0.3, .maxSpeedWhenClose = 60}); // cm3
+  grabber_1.retract();
+  grabber_2.retract();
 }
 
 // void chassis::runSoloAWPPath() {
