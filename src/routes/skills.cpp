@@ -22,19 +22,22 @@ void chassis::runSkillsPath() {
   odom::startChainedMovement(8);
 
   // 1. Back up to grab the mogo
-  odom::moveDistance(-4, 600, {.chasePower = 60});
+  odom::moveDistance(-5.5, 600, {.chasePower = 60});
   subsystems::setTargetLiftPosition(subsystems::liftPositions[0]);
   odom::turnTo(180);
-  odom::moveTo(-50, 22, 180, 4'000,
+  odom::moveTo(-48.5, 22, 180, 4'000,
                {
                    .chasePower = 15,
                    .lead = 0.5,
                    .forwards = false,
-               });
 
+               },
+               true);
+  pros::delay(700);
   grabber_1.retract();
   grabber_2.retract();
   pros::delay(250);
+  odom::waitUntilSettled(1'000);
 
   // 2. Turn to face 90 degrees
   odom::turnTo(90);
@@ -68,6 +71,7 @@ void chassis::runSkillsPath() {
   // score the goal
   intake_motor_stg2.move(-127);
   odom::moveTo(-70, 70, 135, 4'000, {.forwards = false});
+  odom::moveDistance(-3, 2'000, {.forwards = false, .exitOnStall = true});
   grabber_1.extend();
   grabber_2.extend();
   pros::delay(250);
@@ -104,6 +108,9 @@ void chassis::runSkillsPath() {
   // score goal 2
   intake_motor_stg2.move(-127);
   odom::moveTo(-70, -70, 45, 1'000, {.forwards = false, .exitOnStall = true});
+  chassis::move(-100, -100);
+  pros::delay(1000);
+  chassis::move(0, 0);
   grabber_1.extend();
   grabber_2.extend();
   pros::delay(250);
