@@ -29,9 +29,12 @@
 #define INTAKE_PORT_2 -10
 #define INTAKE_SENSOR_PORT 12
 
-// WINGS
+// GRABBER
 #define BLOCKER_1 'a'
 #define BLOCKER_2 'b'
+
+// DOINKER
+#define DOINKER 'h'
 
 /*************************
  * VARIABLE DECLARATIONS *
@@ -97,6 +100,9 @@ extern pros::Optical intake_sensor;
 //// Lift
 extern pros::Motor lift;
 extern pros::adi::AnalogIn lift_position;
+
+//// Doinker
+extern pros::adi::Pneumatics doinker;
 
 // undefine SHARED macro to prevent accidental use
 #undef SHARED

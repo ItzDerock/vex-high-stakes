@@ -66,4 +66,7 @@ pros::Motor lift(LIFT);
 // Potentiometer class not functional, returns errno 112 (EADDRINUSE)
 pros::adi::AnalogIn lift_position(LIFT_ROT_SENSOR_PORT);
 
+// Doinker
+pros::adi::Pneumatics doinker(DOINKER, false, false);
+
 #undef SHARED

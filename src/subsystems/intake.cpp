@@ -1,4 +1,6 @@
 #include "../config.hpp"
+#include "pros/rtos.hpp"
+#include "robot/ExitCondition.hpp"
 #include "robot/subsystems.hpp"
 #include "robot/utils.hpp"
 #include <atomic>
@@ -69,8 +71,8 @@ void check_for_interrupts() {
         break;
       }
 
-      std::cout << "interrupt at " << next_interrupt.position
-                << " and motor is " << motor_position << std::endl;
+      // std::cout << "interrupt at " << next_interrupt.position
+      //           << " and motor is " << motor_position << std::endl;
 
       // lock the controls to prevent driver from interfering
       subsystems::lockIntakeControls.store(true);
@@ -189,12 +191,46 @@ void intake_loop() {
   }
 }
 
+const double INTAKE_MOTOR_STG2_RPM_THRESHOLD = 10;
+ExitCondition stuckCondition(0.5, 100); // stuck for 100ms
+
+void intakeStuckPrevention() {
+  while (true) {
+    double motor_target_pwr = intake_motor_stg2.get_torque(); // Nm
+    double motor_actual_rpm = intake_motor_stg2.get_actual_velocity();
+    int sign = motor_target_pwr > 0 ? 1 : -1;
+
+    // std::cout << "[intake] motor target pwr: " << motor_target_pwr <<
+    // std::endl; std::cout << "[intake] motor actual rpm: " << motor_actual_rpm
+    // << std::endl;
+
+    bool isStuck = std::abs(motor_target_pwr) >= 0.5 &&
+                   std::abs(motor_actual_rpm) < INTAKE_MOTOR_STG2_RPM_THRESHOLD;
+
+    if (stuckCondition.update((int)!isStuck)) {
+      std::cout << "[intake] intake stuck, attempting to unstuck" << std::endl;
+      // intake stuck, move backwards a bit and then try again
+      subsystems::lockIntakeControls.store(true);
+      intake_motor_stg2.move(-sign * 127);
+      pros::delay(100);
+      intake_motor_stg2.move(sign * 127);
+      subsystems::lockIntakeControls.store(false);
+      stuckCondition.reset();
+    }
+
+    pros::delay(20);
+  }
+}
+
 pros::Task *intake_task = nullptr;
 pros::Task *interrupt_task = nullptr;
+pros::Task *intake_stuck_task = nullptr;
 
 void subsystems::initInakeTask() {
   intake_sensor.set_led_pwm(100);
   // create a task that runs the intake loop
   intake_task = new pros::Task(intake_loop, "intake_task");
   interrupt_task = new pros::Task(check_for_interrupts, "interrupt_task");
+  intake_stuck_task =
+      new pros::Task(intakeStuckPrevention, "intake_stuck_task");
 }

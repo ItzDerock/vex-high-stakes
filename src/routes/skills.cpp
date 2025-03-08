@@ -11,7 +11,8 @@
 #define GOAL_SCORED_CENTER_Y 65
 
 // fwd decl
-void doPolarReset(const odom::RobotPosition center, double radius);
+void doPolarReset(const odom::RobotPosition center, double radius,
+                  const odom::RobotPosition offset = {0, 0, 0});
 
 // impl
 void chassis::runSkillsPath() {
@@ -31,13 +32,12 @@ void chassis::runSkillsPath() {
                    .lead = 0.5,
                    .forwards = false,
 
-               },
-               true);
-  pros::delay(700);
+               });
+  // pros::delay(700);
   grabber_1.retract();
   grabber_2.retract();
-  pros::delay(250);
-  odom::waitUntilSettled(1'000);
+  // pros::delay(250);
+  // odom::waitUntilSettled(1'000);
 
   // 2. Turn to face 90 degrees
   odom::turnTo(90);
@@ -62,7 +62,7 @@ void chassis::runSkillsPath() {
   pros::delay(250);
   odom::moveDistance(-24);
   pros::delay(250);
-  odom::moveTo(-54, 60, 315, 2'000, {.maxSpeed = 60});
+  odom::moveTo(-52, 60, 315, 2'000, {.maxSpeed = 60});
   odom::moveDistance(2);
   pros::delay(800);
   odom::moveDistance(-12);
@@ -70,47 +70,48 @@ void chassis::runSkillsPath() {
 
   // score the goal
   intake_motor_stg2.move(-127);
-  odom::moveTo(-70, 70, 135, 4'000, {.forwards = false});
-  odom::moveDistance(-3, 2'000, {.forwards = false, .exitOnStall = true});
+  intake_motor_stg1.move(0);
+  odom::moveTo(-70, 70, 135, 4'000, {.forwards = false, .exitOnStall = true});
+  odom::moveDistance(-3, 500, {.forwards = false, .exitOnStall = true});
   grabber_1.extend();
   grabber_2.extend();
   pros::delay(250);
   doPolarReset({-GOAL_SCORED_CENTER_X, GOAL_SCORED_CENTER_Y, 0},
                GOAL_TO_ROBOT_CENTER_DISTANCE_IN);
-  pros::delay(250);
-  std::cout << "resume at " << odom::getPosition(true, false) << std::endl;
+  pros::delay(100);
   odom::moveDistance(10);
-  intake_motor_stg2.move(127);
+  intake_motor_stg2.move(-40);
 
   // FIRST 6 RING COMPLETE!
-  odom::startChainedMovement(8);
+  odom::startChainedMovement(12);
 
   odom::moveTo(-48, -15, 0, 5'000, {.forwards = false});
   odom::moveTo(-48, -24, 0, 2'000, {.maxSpeed = 60, .forwards = false});
   grabber_2.retract();
   grabber_1.retract();
 
+  intake_motor_stg2.move(127); // enable intake
+  intake_motor_stg1.move(127);
   odom::moveTo(-23, -25, 90, 5'000,
                {.chasePower = 100}); // center square ring, 1
   odom::moveTo(0, -50, 180, 2'000, {});
   odom::moveTo(0, -60, 180, 2'000, {}); // mid ring, 2
+  odom::moveDistance(-2);
   odom::turnTo(270);
   odom::moveTo(
       -66.5, -51, 270, 7'000,
-      {.maxSpeed = 40, .lead = 0.7, .exitOnStall = true}); // long thingy
+      {.maxSpeed = 60, .lead = 0.7, .exitOnStall = true}); // long thingy
 
-  odom::moveDistance(-24); // last ring
-  odom::moveTo(-55, -58, 200, 2'000, {.maxSpeed = 60});
-  pros::delay(1500);
+  odom::moveDistance(-26, 1'200); // last ring
+  odom::moveTo(-52, -60, 200, 2'000, {.maxSpeed = 100});
+  pros::delay(500);
   odom::moveDistance(-15);
   odom::turnTo(45);
 
   // score goal 2
   intake_motor_stg2.move(-127);
   odom::moveTo(-70, -70, 45, 1'000, {.forwards = false, .exitOnStall = true});
-  chassis::move(-100, -100);
-  pros::delay(1000);
-  chassis::move(0, 0);
+  odom::moveDistance(-3, 1'000, {.forwards = false, .exitOnStall = true});
   grabber_1.extend();
   grabber_2.extend();
   pros::delay(250);
@@ -120,25 +121,71 @@ void chassis::runSkillsPath() {
   odom::moveDistance(10);
   intake_motor_stg2.move(80);
 
-  return;
-
   // CROSS MAP TIME
-  odom::moveTo(25, -35, 90, 5'000, {.lead = 0.4});
+  odom::startChainedMovement(8);
+  odom::moveTo(21, -45.5, 90, 3'000, {.lead = -0.3}, true);
+  odom::waitUntilDistance(8); // start only 1st stage intake at 5 inches
+  intake_motor_stg1.move(127);
   intake_motor_stg2.move(0);
-  odom::turnTo(236);
+  odom::waitUntilSettled();
+  odom::moveDistance(2);
 
-  // grab the blue thingy
-  odom::moveTo(42, -35, 240, 6'000, {.maxSpeed = 60, .forwards = false});
-  odom::moveTo(60, -53, 0, 4'000, {.maxSpeed = 90, .forwards = false});
-  chassis::move(-127, -127);
+  // grab goal
+  odom::moveTo(48, 0, 180, 3'000,
+               {.lead = 0.5, .forwards = false, .maxSpeedWhenClose = 60});
+  grabber_1.retract();
+  grabber_2.retract();
 
-  pros::delay(3000); // let go
+  // score rings
+  intake_motor_stg2.move(127);
+  odom::moveTo(29, -15, 225, 3'000, {.lead = 0});
+  odom::moveTo(0, -2, 315, 3'000, {.lead = 0});
+  odom::moveTo(20, 20, 45, 3'000, {.lead = 0});
+  odom::moveTo(20, 40, 0, 3'000, {});
+
+  // doinker to clear
+  doinker.extend();
   intake_motor_stg2.move(-127);
+  intake_motor_stg1.move(-127);
+  odom::moveTo(45, 64, 90, 3'000, {.lead = 0.48});
+
+  // score goal
+  doinker.retract();
+  odom::turnTo(0);
+  odom::turnTo(270);
+  odom::moveDistance(-20, 2'000, {.exitOnStall = true});
   grabber_1.extend();
   grabber_2.extend();
-  pros::delay(500);
-  odom::turnTo(305);
-  odom::moveDistance(12);
+  pros::delay(250);
+  doPolarReset({GOAL_SCORED_CENTER_X, GOAL_SCORED_CENTER_Y, 0},
+               GOAL_TO_ROBOT_CENTER_DISTANCE_IN);
+  pros::delay(150);
+  odom::moveDistance(10);
+  intake_motor_stg2.move(0);
+
+  // push last goal
+  odom::moveTo(30, -10, 180, 3'000, {.lead = 0});
+  odom::moveTo(60, -70, 180, 3'000, {.lead = 0.8});
+  odom::moveDistance(-10);
+
+  // odom::moveTo(60, 47, 90, 3'000, {});
+
+  // // place goal
+  // odom::moveTo(70, 70, 180, 3'000, {.forwards = false, .exitOnStall = true});
+
+  /// old cross map
+  // // grab the blue thingy
+  // odom::moveTo(42, -35, 240, 6'000, {.maxSpeed = 60, .forwards = false});
+  // odom::moveTo(60, -53, 0, 4'000, {.maxSpeed = 90, .forwards = false});
+  // chassis::move(-127, -127);
+
+  // pros::delay(3000); // let go
+  // intake_motor_stg2.move(-127);
+  // grabber_1.extend();
+  // grabber_2.extend();
+  // pros::delay(500);
+  // odom::turnTo(305);
+  // odom::moveDistance(12);
 
   // odom::moveTo(51, -68, 0, 4'000, {.forwards = false});
 
@@ -158,7 +205,8 @@ void chassis::runSkillsPath() {
  * Since the IMU is accurate, we use that combined with a center point to find
  * a point on that radius circle to reset to.
  */
-void doPolarReset(const odom::RobotPosition center, double radius) {
+void doPolarReset(const odom::RobotPosition center, double radius,
+                  const odom::RobotPosition offset) {
   odom::RobotPosition current = odom::getPosition(false, true);
 
   double offset_x = radius * cos(current.theta);
@@ -170,6 +218,8 @@ void doPolarReset(const odom::RobotPosition center, double radius) {
       odom::getPosition(false, false).theta,
   };
 
+  // apply offset
+  newPose = newPose + offset;
   odom::setPosition(newPose);
 
   std::cout << "Polar reset to " << newPose << std::endl;

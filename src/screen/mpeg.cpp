@@ -88,6 +88,11 @@ void MPEGPlayer::_render() {
     time = pros::millis();
 
     plm_frame_t *frame = plm_decode_video(decoder);
+    if (frame == nullptr) {
+      std::cout << "[warn] [mpeg] Failed to decode frame." << std::endl;
+      pros::delay(5);
+    }
+
     this->_decode_callback(decoder, frame, this);
 
     pros::delay(frametime);
@@ -102,7 +107,7 @@ void MPEGPlayer::_decode_callback(plm_t *self, plm_frame_t *frame, void *arg) {
   plm_frame_to_rgb(frame, instance->frame, instance->width * 3);
 
   // now draw to LVGL
-  uint8_t *color = instance->frame;  // uint8_t[3] pointer
+  uint8_t *color = instance->frame; // uint8_t[3] pointer
   for (size_t i = 0; i < instance->height * instance->width; i++) {
     // break the 24-bit color into 8-bit channels
     // deref then increment pointer

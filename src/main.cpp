@@ -166,6 +166,10 @@ void opcontrol() {
       grabber_2.toggle();
     }
 
+    if (master.get_digital_new_press(DIGITAL_L1)) {
+      doinker.toggle();
+    }
+
     // reversing the drivetrain
     if (master.get_digital_new_press(DIGITAL_LEFT)) {
       dtReversed = !dtReversed;
@@ -186,7 +190,7 @@ void opcontrol() {
     // DIGITAL_UP to change the current team
     // long rumble = now color is red, short rumble = now color is bluee
     // cycle: none, red, blue
-    if (master.get_digital_new_press(DIGITAL_L1)) {
+    if (master.get_digital_new_press(DIGITAL_Y)) {
       subsystems::Color current = subsystems::currentTeam.load();
       subsystems::Color newTeam = (subsystems::Color)((current + 1) % 3);
       subsystems::currentTeam.store(newTeam);
