@@ -27,7 +27,7 @@
 // INTAKE
 #define INTAKE_PORT_1 -3
 #define INTAKE_PORT_2 -10
-#define INTAKE_SENSOR_PORT 12
+#define INTAKE_SENSOR_PORT 16
 
 // GRABBER
 #define BLOCKER_1 'a'

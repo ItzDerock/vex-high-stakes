@@ -3,27 +3,55 @@
 #include "robot/chassis.hpp"
 #include "robot/odom.hpp"
 #include "robot/subsystems.hpp"
+#include "robot/utils.hpp"
 
 void chassis::runSoloAWPPath() {
-  grabber_1.extend();
-  grabber_2.extend();
-
-  odom::moveTo(-33, -29.5, 360 - 45, 5'000, {.lead = 0.3, .forwards = false});
-  odom::moveDistance(-4);
+  odom::moveTo(utils::flipForRed({-30, -27, 180 + 45}), 2'000,
+               {.lead = 0.2, .forwards = false, .maxSpeedWhenClose = 60});
+  odom::moveDistance(-5, 1'000, {.maxSpeed = 40, .forwards = false});
+  pros::delay(100);
   grabber_1.retract();
   grabber_2.retract();
-  pros::delay(300);
+  odom::waitUntilSettled();
 
-  // grab rings
-  intake_motor_stg1.move(127);
+  pros::delay(100);
   intake_motor_stg2.move(127);
+  intake_motor_stg1.move(127);
+  pros::delay(200);
 
-  odom::moveTo(-23, -47, 0, 5'000, {.lead = 0.2});
+  odom::moveTo(utils::flipForRed({-24, -52, 180}), 1'500, {.lead = 0});
+  pros::delay(2'000);
 
-  // touch
-  odom::moveTo(-23.6, 0, 180, 5'000, {.lead = 0.2});
-  intake_motor_stg1.move(0);
-  intake_motor_stg2.move(0);
+  // doinker
+  odom::moveTo(utils::flipForRed({-53, -60, 245}), 1'500, {.lead = 0});
+  doinker.extend();
+  if (subsystems::currentTeam.load() == subsystems::RED) {
+    odom::turnTo(180);
+  } else {
+    odom::turnTo(90);
+  }
+
+  pros::delay(500);
+  doinker.retract();
+
+  // grabber_1.extend();
+  // grabber_2.extend();
+
+  // odom::moveTo(-33, -29.5, 360 - 45, 5'000, {.lead = 0.3, .forwards =
+  // false}); odom::moveDistance(-4); grabber_1.retract(); grabber_2.retract();
+  // pros::delay(300);
+
+  // // grab rings
+  // intake_motor_stg1.move(127);
+  // intake_motor_stg2.move(127);
+
+  // odom::moveTo(-23, -47, 0, 5'000, {.lead = 0.2});
+
+  // // touch
+  // odom::moveTo(-23.6, 0, 180, 5'000, {.lead = 0.2});
+  // intake_motor_stg1.move(0);
+  // intake_motor_stg2.move(0);
+  // odom::moveDistance(-5);
 }
 
 // #define TOP_SIDE_DOUBLE false

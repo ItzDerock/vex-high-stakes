@@ -64,13 +64,25 @@ static void reset_position_event_cb(lv_event_t *event) {
       odom::reset({-53, 0, utils::degToRad(270)});
       break;
 
-    case odom::Autonomous::SoloAWP:
-      odom::reset({-56, -39.6, utils::degToRad(270)});
+    case odom::Autonomous::SoloAWP: {
+      odom::RobotPosition startingPos = {-56, -31, utils::degToRad(270)};
+      if (subsystems::currentTeam.load() == subsystems::RED) {
+        startingPos.x = startingPos.x * -1;
+        startingPos.theta = startingPos.theta - M_PI;
+      }
+      odom::reset(startingPos);
       break;
+    } break;
 
-    case odom::Autonomous::Rush:
-      odom::reset({-54.7, -59, utils::degToRad(270)});
+    case odom::Autonomous::Rush: {
+      odom::RobotPosition startingPos = {-55, 60, utils::degToRad(270)};
+      if (subsystems::currentTeam.load() == subsystems::RED) {
+        startingPos.x = startingPos.x * -1;
+        startingPos.theta = startingPos.theta - M_PI;
+      }
+      odom::reset(startingPos);
       break;
+    } break;
 
     default:
       odom::reset({0, 0, 0});
@@ -107,7 +119,7 @@ void screen::initAutonSelector(MPEGPlayer *video) {
   lv_dropdown_set_selected(dropdown, (uint16_t)odom::autonomous);
 
   // create the options for the dropdown
-  lv_dropdown_set_options(dropdown, "None\nSkills\nSolo AWP\nRush");
+  lv_dropdown_set_options(dropdown, "None\nSkills\nSolo AWP\nRush\nAlliance");
   lv_obj_add_event_cb(dropdown, auto_dropdown_select, LV_EVENT_VALUE_CHANGED,
                       NULL);
 

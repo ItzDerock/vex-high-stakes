@@ -21,5 +21,6 @@ void initAutonRoutes();
 void runSkillsPath();
 void runSoloAWPPath();
 void runRushPath();
+void runAlliancePath();
 
 } // namespace chassis

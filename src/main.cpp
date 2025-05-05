@@ -78,6 +78,10 @@ void autonomous() {
     chassis::runRushPath();
     break;
 
+  case odom::Autonomous::Alliance:
+    chassis::runAlliancePath();
+    break;
+
   default:
     printf("Invalid autonomous mode\n");
   }

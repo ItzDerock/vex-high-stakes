@@ -35,6 +35,8 @@ double radToDeg(double rad);
  */
 float slew(float target, float current, float maxChange);
 
+odom::RobotPosition flipForRed(odom::RobotPosition bluePosition);
+
 /**
  * @brief Get the signed curvature of a circle that intersects the first pose
  * and the second pose
@@ -42,8 +44,8 @@ float slew(float target, float current, float maxChange);
  * @note The circle will be tangent to the theta value of the first pose
  * @note The curvature is signed. Positive curvature means the circle is going
  * clockwise, negative means counter-clockwise
- * @note Theta has to be in radians and in standard form. That means 0 is right
- * and increases counter-clockwise
+ * @note Theta has to be in radians and in standard form. That means 0 is
+ * right and increases counter-clockwise
  *
  * @param pose the first pose
  * @param other the second pose
@@ -51,20 +53,17 @@ float slew(float target, float current, float maxChange);
  */
 float getCurvature(odom::RobotPosition pose, odom::RobotPosition other);
 
-template <typename T>
-constexpr T sgn(T value) {
-  return value < 0 ? -1 : 1;
-}
+template <typename T> constexpr T sgn(T value) { return value < 0 ? -1 : 1; }
 
 /**
  * Basic timer class
  */
 class Timer {
- private:
+private:
   double startTime;
   double endTime;
 
- public:
+public:
   Timer(double duration);
 
   /**
@@ -85,4 +84,4 @@ class Timer {
 
 double driveCurve(double input);
 
-}  // namespace utils
+} // namespace utils

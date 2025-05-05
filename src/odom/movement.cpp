@@ -1,6 +1,7 @@
 #include "../config.hpp"
 #include "robot/chassis.hpp"
 #include "robot/odom.hpp"
+#include "robot/position.hpp"
 #include "robot/utils.hpp"
 
 int chainedMovementCount = 0;
@@ -42,7 +43,8 @@ inline void updateSettlement() {
   }
 }
 
-void odom::moveDistance(double dist, double timeout, MoveToPoseParams params) {
+void odom::moveDistance(double dist, double timeout, MoveToPoseParams params,
+                        bool async) {
   int8_t sign = dist < 0 ? -1 : 1;
 
   double distanceError = infinity();
@@ -71,7 +73,7 @@ void odom::moveDistance(double dist, double timeout, MoveToPoseParams params) {
 
   odom::moveTo(targetX, targetY,
                utils::radToDeg(getPosition(false, false).theta), timeout,
-               params, false);
+               params, async);
 
   // stop the motors
   chassis::moveVelocity(0, 0);
@@ -382,4 +384,9 @@ void odom::waitUntilDistance(double distance, uint timeout) {
          !timer.isUp()) {
     pros::delay(20);
   }
+}
+
+void odom::moveTo(odom::RobotPosition position, int timeout,
+                  MoveToPoseParams params, bool async) {
+  odom::moveTo(position.x, position.y, position.theta, timeout, params, async);
 }

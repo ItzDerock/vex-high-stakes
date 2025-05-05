@@ -1,4 +1,5 @@
 #include "robot/utils.hpp"
+#include "robot/subsystems.hpp"
 
 #include <math.h>
 
@@ -88,4 +89,20 @@ double utils::driveCurve(double input) {
           powf(2.718, (fabs(input) - 127) / 10) *
               (1 - powf(2.718, -(CURVE_SCALE / 10)))) *
          input;
+}
+
+// BLUE if we want to run our autons on + side
+// RED if we want to run our autons on - side
+#define FLIP_TEAM subsystems::BLUE
+
+odom::RobotPosition utils::flipForRed(odom::RobotPosition bluePosition) {
+  if (subsystems::currentTeam.load() == FLIP_TEAM) {
+    bluePosition.x *= -1;
+    bluePosition.theta *= -1;
+  }
+
+  bluePosition.theta =
+      utils::radToDeg(utils::angleSquish(utils::degToRad(bluePosition.theta)));
+
+  return bluePosition;
 }

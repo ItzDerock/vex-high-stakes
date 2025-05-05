@@ -1,4 +1,5 @@
 #include "../config.hpp"
+#include "pros/misc.hpp"
 #include "pros/rtos.hpp"
 #include "robot/ExitCondition.hpp"
 #include "robot/subsystems.hpp"
@@ -10,10 +11,13 @@
 #define NEAR_THRESHOLD 200
 #define COLOR_RED 0
 #define COLOR_BLUE 229
-#define COLOR_THRESHOLD 20
-#define MOVES_TILL_STOP 18
+#define COLOR_THRESHOLD 40
+#define MOVES_TILL_STOP 160
 #define MOVES_TILL_REDIRECT 0
 #define MOVES_TILL_SLOWDOWN 0
+
+// stops intake on wrong color (only for auton)
+#define STOP_ON_WRONG_COLOR true
 
 /**
  * Changes the behavior of how the color is detected.
@@ -172,10 +176,16 @@ void intake_loop() {
     // otherwise, if differing ring color, eject it
     if (detected_color != subsystems::currentTeam.load() &&
         subsystems::currentTeam.load() != subsystems::NONE) {
-      std::cout << "[intake] publishing sort interrupt" << std::endl;
-      interrupts.push(Interrupt{.type = Interrupt::SORT,
-                                .position = intake_motor_stg2.get_position() +
-                                            MOVES_TILL_STOP});
+      if (STOP_ON_WRONG_COLOR && pros::competition::is_autonomous()) {
+        std::cout << "[intake] stopping" << std::endl;
+        intake_motor_stg2.move(0);
+        intake_motor_stg1.move(0);
+      } else {
+        std::cout << "[intake] publishing sort interrupt" << std::endl;
+        interrupts.push(Interrupt{.type = Interrupt::SORT,
+                                  .position = intake_motor_stg2.get_position() +
+                                              MOVES_TILL_STOP});
+      }
     }
 
 // if we're doing rising edge detection, we need to wait until the falling
@@ -200,9 +210,11 @@ void intakeStuckPrevention() {
     double motor_actual_rpm = intake_motor_stg2.get_actual_velocity();
     int sign = motor_target_pwr > 0 ? 1 : -1;
 
-    // std::cout << "[intake] motor target pwr: " << motor_target_pwr <<
-    // std::endl; std::cout << "[intake] motor actual rpm: " << motor_actual_rpm
-    // << std::endl;
+    // only care if we are intaking
+    if (motor_actual_rpm < 0) {
+      pros::delay(20);
+      continue;
+    }
 
     bool isStuck = std::abs(motor_target_pwr) >= 0.5 &&
                    std::abs(motor_actual_rpm) < INTAKE_MOTOR_STG2_RPM_THRESHOLD;

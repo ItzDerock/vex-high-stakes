@@ -23,7 +23,9 @@ void chassis::runSkillsPath() {
   odom::startChainedMovement(8);
 
   // 1. Back up to grab the mogo
-  odom::moveDistance(-5.5, 600, {.chasePower = 60});
+  odom::moveDistance(-3, 600, {.chasePower = 60});
+  subsystems::moveLift(-127);
+  pros::delay(50);
   subsystems::setTargetLiftPosition(subsystems::liftPositions[0]);
   odom::turnTo(180);
   odom::moveTo(-48.5, 22, 180, 4'000,
@@ -50,7 +52,7 @@ void chassis::runSkillsPath() {
   odom::moveTo(-23, 23, 90, 5'000, {.chasePower = 100});
   pros::delay(200);
   odom::moveTo(-1, 55, 30, 5'000, {}); // center ring
-  odom::moveDistance(-5);
+  odom::moveDistance(-5, 500);
 
   // Grab 3 more rings
   odom::moveTo(-23, 50, 270, 2'500, {.chasePower = 70, .lead = 0.5});
@@ -60,12 +62,12 @@ void chassis::runSkillsPath() {
 
   // last ring
   pros::delay(250);
-  odom::moveDistance(-24);
+  odom::moveDistance(-24, 1'500);
   pros::delay(250);
   odom::moveTo(-52, 60, 315, 2'000, {.maxSpeed = 60});
-  odom::moveDistance(2);
+  odom::moveDistance(2, 500);
   pros::delay(800);
-  odom::moveDistance(-12);
+  odom::moveDistance(-12, 1'500);
   pros::delay(100);
 
   // score the goal
@@ -79,7 +81,7 @@ void chassis::runSkillsPath() {
   doPolarReset({-GOAL_SCORED_CENTER_X, GOAL_SCORED_CENTER_Y, 0},
                GOAL_TO_ROBOT_CENTER_DISTANCE_IN);
   pros::delay(100);
-  odom::moveDistance(10);
+  odom::moveDistance(10, 1'000);
   intake_motor_stg2.move(-40);
 
   // FIRST 6 RING COMPLETE!
@@ -96,7 +98,7 @@ void chassis::runSkillsPath() {
                {.chasePower = 100}); // center square ring, 1
   odom::moveTo(0, -50, 180, 2'000, {});
   odom::moveTo(0, -60, 180, 2'000, {}); // mid ring, 2
-  odom::moveDistance(-2);
+  odom::moveDistance(-2, 500);
   odom::turnTo(270);
   odom::moveTo(
       -66.5, -51, 270, 7'000,
@@ -105,7 +107,7 @@ void chassis::runSkillsPath() {
   odom::moveDistance(-26, 1'200); // last ring
   odom::moveTo(-52, -60, 200, 2'000, {.maxSpeed = 100});
   pros::delay(500);
-  odom::moveDistance(-15);
+  odom::moveDistance(-15, 1'000);
   odom::turnTo(45);
 
   // score goal 2
@@ -118,7 +120,7 @@ void chassis::runSkillsPath() {
   doPolarReset({-GOAL_SCORED_CENTER_X, -GOAL_SCORED_CENTER_Y, 0},
                GOAL_TO_ROBOT_CENTER_DISTANCE_IN);
   pros::delay(250);
-  odom::moveDistance(10);
+  odom::moveDistance(10, 1'000);
   intake_motor_stg2.move(80);
 
   // CROSS MAP TIME
@@ -128,7 +130,7 @@ void chassis::runSkillsPath() {
   intake_motor_stg1.move(127);
   intake_motor_stg2.move(0);
   odom::waitUntilSettled();
-  odom::moveDistance(2);
+  odom::moveDistance(2, 500);
 
   // grab goal
   odom::moveTo(48, 0, 180, 3'000,
@@ -152,7 +154,7 @@ void chassis::runSkillsPath() {
   // score goal
   doinker.retract();
   odom::turnTo(0);
-  odom::turnTo(270);
+  odom::turnTo(245);
   odom::moveDistance(-20, 2'000, {.exitOnStall = true});
   grabber_1.extend();
   grabber_2.extend();
@@ -160,13 +162,13 @@ void chassis::runSkillsPath() {
   doPolarReset({GOAL_SCORED_CENTER_X, GOAL_SCORED_CENTER_Y, 0},
                GOAL_TO_ROBOT_CENTER_DISTANCE_IN);
   pros::delay(150);
-  odom::moveDistance(10);
+  odom::moveDistance(10, 1'000);
   intake_motor_stg2.move(0);
 
   // push last goal
   odom::moveTo(30, -10, 180, 3'000, {.lead = 0});
   odom::moveTo(60, -70, 180, 3'000, {.lead = 0.8});
-  odom::moveDistance(-10);
+  odom::moveDistance(-10, 1'000);
 
   // odom::moveTo(60, 47, 90, 3'000, {});
 

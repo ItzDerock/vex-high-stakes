@@ -12,7 +12,7 @@
  * Format: range, time
  ****************/
 #define LATERAL_LARGE_EXIT 4, 300
-#define LATERAL_SMALL_EXIT 1, 100
+#define LATERAL_SMALL_EXIT 1.2, 100
 #define ANGULAR_LARGE_EXIT 3, 300
 #define ANGULAR_SMALL_EXIT 2, 150
 
@@ -95,7 +95,7 @@ struct MoveToPoseParams {
  * Drive a certain distance (in inches)
  */
 void moveDistance(double distance, double timeout = 10'000,
-                  MoveToPoseParams params = {});
+                  MoveToPoseParams params = {}, bool async = false);
 
 /**
  * @brief Move the chassis towards the target pose
@@ -112,6 +112,9 @@ void moveDistance(double distance, double timeout = 10'000,
  * default
  */
 void moveTo(float x, float y, float theta, int timeout, MoveToPoseParams params,
+            bool async = false);
+
+void moveTo(odom::RobotPosition position, int timeout, MoveToPoseParams params,
             bool async = false);
 
 /**
@@ -147,7 +150,7 @@ void waitUntilDistance(double distance, uint timeout = 10'000);
 /**
  * Autonomous enum
  */
-enum class Autonomous { None, Skills, SoloAWP, Rush };
+enum class Autonomous { None, Skills, SoloAWP, Rush, Alliance };
 
 /**
  * follow pure pursuit path
